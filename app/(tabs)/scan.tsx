@@ -2,6 +2,8 @@ import { PlantResult } from "@/components/plant-result";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { identifyPlantSimple, type PlantIdResponse } from "@/services/plantId";
+import { trackSuccessfulScan } from "@/services/scanTracker";
+import { useUser } from "@clerk/clerk-expo";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { useRef, useState } from "react";
 import {
@@ -15,6 +17,7 @@ import {
 } from "react-native";
 
 export default function ScanScreen() {
+	const { user } = useUser();
 	const [facing, setFacing] = useState<CameraType>("back");
 	const [permission, requestPermission] = useCameraPermissions();
 	const [photo, setPhoto] = useState<string | null>(null);
@@ -115,6 +118,11 @@ export default function ScanScreen() {
 			const result = await identifyPlantSimple(photo);
 			console.log("Analysis complete:", result);
 			setAnalysisResult(result);
+			
+			// Track successful scan if a plant was identified
+			if (result?.result?.is_plant?.binary) {
+				await trackSuccessfulScan(user);
+			}
 		} catch (error) {
 			console.error("Analysis error:", error);
 			const errorMessage =
