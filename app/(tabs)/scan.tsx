@@ -1,5 +1,7 @@
+import { PlantResult } from "@/components/plant-result";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { identifyPlantSimple, type PlantIdResponse } from "@/services/plantId";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { useRef, useState } from "react";
 import {
@@ -18,6 +20,11 @@ export default function ScanScreen() {
 	const [photo, setPhoto] = useState<string | null>(null);
 	const [isCameraOpen, setIsCameraOpen] = useState(false);
 	const [isCapturing, setIsCapturing] = useState(false);
+	const [isAnalyzing, setIsAnalyzing] = useState(false);
+	const [analysisResult, setAnalysisResult] = useState<PlantIdResponse | null>(
+		null
+	);
+	const [analysisError, setAnalysisError] = useState<string | null>(null);
 	const cameraRef = useRef<CameraView>(null);
 
 	if (!permission) {
@@ -93,6 +100,39 @@ export default function ScanScreen() {
 		setIsCapturing(false);
 	}
 
+	async function analyzePlant() {
+		if (!photo) {
+			Alert.alert("Error", "No photo to analyze");
+			return;
+		}
+
+		setIsAnalyzing(true);
+		setAnalysisError(null);
+		setAnalysisResult(null);
+
+		try {
+			console.log("Starting plant analysis...");
+			const result = await identifyPlantSimple(photo);
+			console.log("Analysis complete:", result);
+			setAnalysisResult(result);
+		} catch (error) {
+			console.error("Analysis error:", error);
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: "Failed to analyze plant. Please try again.";
+			setAnalysisError(errorMessage);
+		} finally {
+			setIsAnalyzing(false);
+		}
+	}
+
+	function closeResults() {
+		setAnalysisResult(null);
+		setAnalysisError(null);
+		setPhoto(null);
+	}
+
 	if (isCameraOpen) {
 		return (
 			<View style={styles.cameraContainer}>
@@ -134,6 +174,18 @@ export default function ScanScreen() {
 		);
 	}
 
+	// Show analysis results
+	if (analysisResult || isAnalyzing || analysisError) {
+		return (
+			<PlantResult
+				result={analysisResult}
+				isLoading={isAnalyzing}
+				error={analysisError}
+				onClose={closeResults}
+			/>
+		);
+	}
+
 	return (
 		<ThemedView style={styles.container}>
 			<ThemedText type="title" style={styles.title}>
@@ -172,12 +224,7 @@ export default function ScanScreen() {
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={[styles.button, styles.analyzeButton]}
-							onPress={() =>
-								Alert.alert(
-									"Coming Soon",
-									"Plant analysis feature coming soon!"
-								)
-							}
+							onPress={analyzePlant}
 						>
 							<Text style={styles.buttonText}>🔍 Analyze</Text>
 						</TouchableOpacity>
