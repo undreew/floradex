@@ -11,12 +11,13 @@
 		"ios": {
 			"supportsTablet": true,
 			"infoPlist": {
-				"NSCameraUsageDescription": "This app uses the camera to scan and identify plants."
+				"NSCameraUsageDescription": "This app uses the camera to scan and identify plants.",
+				"NSPhotoLibraryUsageDescription": "This app needs access to your photo library to identify plants from your photos."
 			}
 		},
 		"android": {
 			"package": "com.floradex.app",
-			"permissions": ["CAMERA"],
+			"permissions": ["CAMERA", "READ_MEDIA_IMAGES", "READ_EXTERNAL_STORAGE"],
 			"adaptiveIcon": {
 				"backgroundColor": "#E6F4FE",
 				"foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -36,6 +37,12 @@
 				"expo-camera",
 				{
 					"cameraPermission": "Allow Floradex to access your camera to scan plants."
+				}
+			],
+			[
+				"expo-image-picker",
+				{
+					"photosPermission": "Allow Floradex to access your photos to identify plants."
 				}
 			],
 			[
