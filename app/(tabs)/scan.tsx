@@ -2,7 +2,11 @@ import { PlantResult } from "@/components/plant-result";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { identifyPlantSimple, type PlantIdResponse } from "@/services/plantId";
-import { trackSuccessfulScan } from "@/services/scanTracker";
+import {
+	getQuizBatchProgress,
+	isQuizPending,
+	trackSuccessfulScan,
+} from "@/services/scanTracker";
 import { useUser } from "@clerk/clerk-expo";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { useRef, useState } from "react";
@@ -118,10 +122,16 @@ export default function ScanScreen() {
 			const result = await identifyPlantSimple(photo);
 			console.log("Analysis complete:", result);
 			setAnalysisResult(result);
-			
+
 			// Track successful scan if a plant was identified
 			if (result?.result?.is_plant?.binary) {
-				await trackSuccessfulScan(user);
+				const topSuggestion = result.result.classification.suggestions[0];
+				await trackSuccessfulScan(user, {
+					name: topSuggestion?.name || "Unknown Plant",
+					commonNames: topSuggestion?.details?.common_names,
+					probability: topSuggestion?.probability || 0,
+					imageUrl: topSuggestion?.similar_images?.[0]?.url,
+				});
 			}
 		} catch (error) {
 			console.error("Analysis error:", error);
@@ -191,6 +201,37 @@ export default function ScanScreen() {
 				error={analysisError}
 				onClose={closeResults}
 			/>
+		);
+	}
+
+	// Check if quiz is pending and block scanning
+	const quizPending = isQuizPending(user);
+	const batchProgress = getQuizBatchProgress(user);
+
+	if (quizPending) {
+		return (
+			<ThemedView style={styles.container}>
+				<ThemedText type="title" style={styles.title}>
+					🌿 Plant Scanner
+				</ThemedText>
+
+				<View style={styles.blockedContainer}>
+					<Text style={styles.blockedIcon}>🔒</Text>
+					<ThemedText style={styles.blockedTitle}>
+						Scanning Temporarily Locked
+					</ThemedText>
+					<ThemedText style={styles.blockedMessage}>
+						You've scanned {batchProgress.current} plants!
+						{"\n\n"}
+						Complete the quiz to unlock more scanning.
+					</ThemedText>
+					<View style={styles.blockedHint}>
+						<ThemedText style={styles.blockedHintText}>
+							💡 Head to the Quiz tab to continue
+						</ThemedText>
+					</View>
+				</View>
+			</ThemedView>
 		);
 	}
 
@@ -376,6 +417,47 @@ const styles = StyleSheet.create({
 		fontSize: 10,
 		marginBottom: 10,
 		opacity: 0.5,
+		textAlign: "center",
+	},
+	blockedContainer: {
+		alignItems: "center",
+		padding: 30,
+		borderRadius: 20,
+		backgroundColor: "rgba(255, 149, 0, 0.1)",
+		borderWidth: 2,
+		borderColor: "#FF9500",
+		width: "100%",
+		maxWidth: 400,
+		marginTop: 20,
+	},
+	blockedIcon: {
+		fontSize: 60,
+		marginBottom: 20,
+	},
+	blockedTitle: {
+		fontSize: 22,
+		fontWeight: "bold",
+		marginBottom: 15,
+		textAlign: "center",
+	},
+	blockedMessage: {
+		fontSize: 16,
+		textAlign: "center",
+		opacity: 0.8,
+		lineHeight: 24,
+	},
+	blockedHint: {
+		marginTop: 20,
+		padding: 15,
+		backgroundColor: "rgba(52, 199, 89, 0.1)",
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: "#34C759",
+	},
+	blockedHintText: {
+		fontSize: 14,
+		color: "#34C759",
+		fontWeight: "600",
 		textAlign: "center",
 	},
 });
