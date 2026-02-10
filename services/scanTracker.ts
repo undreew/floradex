@@ -34,3 +34,32 @@ export function getSuccessfulScanCount(user: any): number {
 
 	return (user.unsafeMetadata?.successfulScans as number) || 0;
 }
+
+/**
+ * Check if the user has access to the quiz feature
+ * Access is granted if:
+ * - The user has enough successful scans (based on EXPO_PUBLIC_QUIZ_MIN_SCANS)
+ * - Or if EXPO_PUBLIC_QUIZ_MIN_SCANS is set to 0 or below (bypass mode)
+ */
+export function hasQuizAccess(user: any): boolean {
+	const scanCount = getSuccessfulScanCount(user);
+	const minScansRequired = parseInt(
+		process.env.EXPO_PUBLIC_QUIZ_MIN_SCANS || "5",
+		10
+	);
+
+	// If min scans is 0 or negative, grant access regardless of scan count
+	if (minScansRequired <= 0) {
+		return true;
+	}
+
+	// Otherwise, check if user has enough scans
+	return scanCount >= minScansRequired;
+}
+
+/**
+ * Get the minimum scans required for quiz access
+ */
+export function getMinScansRequired(): number {
+	return parseInt(process.env.EXPO_PUBLIC_QUIZ_MIN_SCANS || "5", 10);
+}

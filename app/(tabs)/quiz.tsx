@@ -1,6 +1,10 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { getSuccessfulScanCount } from "@/services/scanTracker";
+import {
+	getMinScansRequired,
+	getSuccessfulScanCount,
+	hasQuizAccess,
+} from "@/services/scanTracker";
 import { useUser } from "@clerk/clerk-expo";
 import React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
@@ -8,6 +12,8 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 const Quiz = () => {
 	const { user, isLoaded } = useUser();
 	const scanCount = getSuccessfulScanCount(user);
+	const quizAccess = hasQuizAccess(user);
+	const minScansRequired = getMinScansRequired();
 
 	if (!isLoaded) {
 		return (
@@ -37,9 +43,29 @@ const Quiz = () => {
 				</ThemedText>
 			</View>
 
-			<ThemedText style={styles.comingSoon}>
-				🎯 Quiz feature coming soon!
-			</ThemedText>
+			{quizAccess ? (
+				<View style={styles.accessGrantedContainer}>
+					<ThemedText style={styles.accessGrantedText}>
+						✅ Quiz Access Granted!
+					</ThemedText>
+					<ThemedText style={styles.comingSoon}>
+						🎯 Quiz feature coming soon!
+					</ThemedText>
+				</View>
+			) : (
+				<View style={styles.accessDeniedContainer}>
+					<ThemedText style={styles.accessDeniedText}>
+						🔒 Quiz Locked
+					</ThemedText>
+					<ThemedText style={styles.requirementText}>
+						Scan {minScansRequired - scanCount} more plant
+						{minScansRequired - scanCount > 1 ? "s" : ""} to unlock the quiz!
+					</ThemedText>
+					<ThemedText style={styles.minScansText}>
+						({scanCount}/{minScansRequired} scans completed)
+					</ThemedText>
+				</View>
+			)}
 		</ThemedView>
 	);
 };
@@ -100,6 +126,47 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		opacity: 0.6,
 		fontStyle: "italic",
+	},
+	accessGrantedContainer: {
+		alignItems: "center",
+		padding: 20,
+		borderRadius: 15,
+		backgroundColor: "rgba(52, 199, 89, 0.15)",
+		borderWidth: 2,
+		borderColor: "#34C759",
+		width: "100%",
+		maxWidth: 400,
+	},
+	accessGrantedText: {
+		fontSize: 20,
+		fontWeight: "bold",
+		color: "#34C759",
+		marginBottom: 10,
+	},
+	accessDeniedContainer: {
+		alignItems: "center",
+		padding: 20,
+		borderRadius: 15,
+		backgroundColor: "rgba(255, 149, 0, 0.1)",
+		borderWidth: 2,
+		borderColor: "#FF9500",
+		width: "100%",
+		maxWidth: 400,
+	},
+	accessDeniedText: {
+		fontSize: 20,
+		fontWeight: "bold",
+		color: "#FF9500",
+		marginBottom: 10,
+	},
+	requirementText: {
+		fontSize: 16,
+		textAlign: "center",
+		marginBottom: 5,
+	},
+	minScansText: {
+		fontSize: 14,
+		opacity: 0.7,
 	},
 });
 
