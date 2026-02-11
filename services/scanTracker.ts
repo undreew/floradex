@@ -174,3 +174,78 @@ export async function completeQuiz(user: any): Promise<void> {
 		console.error("Failed to complete quiz:", error);
 	}
 }
+
+export interface QuizQuestion {
+	plant: ScannedPlant;
+	options: string[];
+	correctAnswer: string;
+	questionNumber: number;
+}
+
+/**
+ * Generate quiz questions from the current batch of scanned plants
+ * Each question shows a plant and asks user to identify it from 4 options
+ */
+export function generateQuizQuestions(plants: ScannedPlant[]): QuizQuestion[] {
+	if (plants.length < 2) {
+		return [];
+	}
+
+	// Shuffle plants for random question order
+	const shuffledPlants = [...plants].sort(() => Math.random() - 0.5);
+
+	return shuffledPlants.map((plant, index) => {
+		// Get the correct answer (use common name if available, otherwise scientific name)
+		const correctAnswer =
+			plant.commonNames && plant.commonNames.length > 0
+				? plant.commonNames[0]
+				: plant.name;
+
+		// Get other plants for wrong options
+		const otherPlants = plants.filter((p) => p.id !== plant.id);
+
+		// Create wrong options from other plants
+		const wrongOptions = otherPlants.slice(0, 3).map((p) => {
+			return p.commonNames && p.commonNames.length > 0
+				? p.commonNames[0]
+				: p.name;
+		});
+
+		// If we don't have enough wrong options, add generic ones
+		const genericOptions = [
+			"Rose",
+			"Sunflower",
+			"Daisy",
+			"Tulip",
+			"Orchid",
+			"Cactus",
+			"Fern",
+			"Bamboo",
+		];
+
+		while (
+			wrongOptions.length < 3 &&
+			wrongOptions.length < otherPlants.length + genericOptions.length
+		) {
+			const randomGeneric =
+				genericOptions[Math.floor(Math.random() * genericOptions.length)];
+			if (
+				!wrongOptions.includes(randomGeneric) &&
+				randomGeneric !== correctAnswer
+			) {
+				wrongOptions.push(randomGeneric);
+			}
+		}
+
+		// Combine and shuffle options
+		const allOptions = [correctAnswer, ...wrongOptions.slice(0, 3)];
+		const shuffledOptions = allOptions.sort(() => Math.random() - 0.5);
+
+		return {
+			plant,
+			options: shuffledOptions,
+			correctAnswer,
+			questionNumber: index + 1,
+		};
+	});
+}

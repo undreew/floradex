@@ -2,15 +2,17 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import {
 	completeQuiz,
+	generateQuizQuestions,
 	getCurrentQuizBatch,
 	getMinScansRequired,
 	getQuizBatchProgress,
 	getSuccessfulScanCount,
 	hasQuizAccess,
 	isQuizPending,
+	type QuizQuestion,
 } from "@/services/scanTracker";
 import { useUser } from "@clerk/clerk-expo";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	Alert,
@@ -24,6 +26,12 @@ import {
 const Quiz = () => {
 	const { user, isLoaded } = useUser();
 	const [isCompletingQuiz, setIsCompletingQuiz] = useState(false);
+	const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+	const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+	const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+	const [score, setScore] = useState(0);
+	const [showResult, setShowResult] = useState(false);
+	const [quizStarted, setQuizStarted] = useState(false);
 
 	const scanCount = getSuccessfulScanCount(user);
 	const quizAccess = hasQuizAccess(user);
@@ -32,32 +40,81 @@ const Quiz = () => {
 	const currentBatch = getCurrentQuizBatch(user);
 	const batchProgress = getQuizBatchProgress(user);
 
-	const handleCompleteQuiz = async () => {
+	// Generate quiz questions when batch is ready
+	useEffect(() => {
+		if (quizPending && currentBatch.length > 0 && quizQuestions.length === 0) {
+			const questions = generateQuizQuestions(currentBatch);
+			setQuizQuestions(questions);
+		}
+	}, [quizPending, currentBatch]);
+
+	const handleStartQuiz = () => {
+		setQuizStarted(true);
+		setCurrentQuestionIndex(0);
+		setScore(0);
+		setShowResult(false);
+		setSelectedAnswer(null);
+	};
+
+	const handleAnswerSelect = (answer: string) => {
+		if (selectedAnswer) return; // Already answered
+
+		setSelectedAnswer(answer);
+		const currentQuestion = quizQuestions[currentQuestionIndex];
+
+		if (answer === currentQuestion.correctAnswer) {
+			setScore(score + 1);
+		}
+	};
+
+	const handleNextQuestion = () => {
+		if (currentQuestionIndex < quizQuestions.length - 1) {
+			setCurrentQuestionIndex(currentQuestionIndex + 1);
+			setSelectedAnswer(null);
+		} else {
+			setShowResult(true);
+		}
+	};
+
+	const handleFinishQuiz = async () => {
+		const percentage = (score / quizQuestions.length) * 100;
+		const passed = percentage >= 60; // 60% passing grade
+
 		Alert.alert(
-			"Complete Quiz",
-			"This will unlock scanning again. In the future, you'll need to answer quiz questions about these plants.",
+			passed ? "Congratulations! 🎉" : "Quiz Complete",
+			passed
+				? `You scored ${score}/${quizQuestions.length} (${percentage.toFixed(0)}%)!\n\nYou can now scan more plants.`
+				: `You scored ${score}/${quizQuestions.length} (${percentage.toFixed(0)}%).\n\nYou can retake the quiz or continue scanning.`,
 			[
 				{
-					text: "Cancel",
-					style: "cancel",
-				},
-				{
-					text: "Complete",
+					text: passed ? "Continue" : "Retake Quiz",
 					onPress: async () => {
-						setIsCompletingQuiz(true);
-						try {
-							await completeQuiz(user);
-							Alert.alert(
-								"Success! 🎉",
-								"Quiz completed! You can now scan more plants."
-							);
-						} catch (error) {
-							Alert.alert(
-								"Error",
-								"Failed to complete quiz. Please try again."
-							);
-						} finally {
-							setIsCompletingQuiz(false);
+						if (passed) {
+							setIsCompletingQuiz(true);
+							try {
+								await completeQuiz(user);
+								// Reset quiz state
+								setQuizStarted(false);
+								setQuizQuestions([]);
+								setCurrentQuestionIndex(0);
+								setScore(0);
+								setShowResult(false);
+								setSelectedAnswer(null);
+							} catch (error) {
+								Alert.alert(
+									"Error",
+									"Failed to complete quiz. Please try again."
+								);
+							} finally {
+								setIsCompletingQuiz(false);
+							}
+						} else {
+							// Retake quiz
+							setQuizStarted(false);
+							setCurrentQuestionIndex(0);
+							setScore(0);
+							setShowResult(false);
+							setSelectedAnswer(null);
 						}
 					},
 				},
@@ -75,6 +132,163 @@ const Quiz = () => {
 
 	// Show quiz if pending
 	if (quizPending && currentBatch.length > 0) {
+		// Show quiz results
+		if (showResult) {
+			const percentage = (score / quizQuestions.length) * 100;
+			const passed = percentage >= 60;
+
+			return (
+				<ThemedView style={styles.container}>
+					<ScrollView
+						style={styles.scrollView}
+						contentContainerStyle={styles.scrollContent}
+					>
+						<ThemedText type="title" style={styles.title}>
+							{passed ? "🎉 Great Job!" : "📊 Quiz Complete"}
+						</ThemedText>
+
+						<View
+							style={[
+								styles.resultContainer,
+								passed ? styles.resultPassed : styles.resultFailed,
+							]}
+						>
+							<Text style={styles.resultIcon}>{passed ? "✅" : "📝"}</Text>
+							<ThemedText style={styles.resultScore}>
+								{score} / {quizQuestions.length}
+							</ThemedText>
+							<ThemedText style={styles.resultPercentage}>
+								{percentage.toFixed(0)}%
+							</ThemedText>
+							<ThemedText style={styles.resultMessage}>
+								{passed
+									? "Excellent work! You can now continue scanning plants."
+									: "Keep learning! You can retake the quiz or continue anyway."}
+							</ThemedText>
+						</View>
+
+						<TouchableOpacity
+							style={[
+								styles.finishButton,
+								isCompletingQuiz && styles.finishButtonDisabled,
+							]}
+							onPress={handleFinishQuiz}
+							disabled={isCompletingQuiz}
+						>
+							{isCompletingQuiz ? (
+								<ActivityIndicator color="white" />
+							) : (
+								<Text style={styles.finishButtonText}>
+									{passed ? "Continue" : "Finish"}
+								</Text>
+							)}
+						</TouchableOpacity>
+					</ScrollView>
+				</ThemedView>
+			);
+		}
+
+		// Show quiz interface
+		if (quizStarted && quizQuestions.length > 0) {
+			const currentQuestion = quizQuestions[currentQuestionIndex];
+
+			return (
+				<ThemedView style={styles.container}>
+					<ScrollView
+						style={styles.scrollView}
+						contentContainerStyle={styles.scrollContent}
+					>
+						<View style={styles.quizHeader}>
+							<ThemedText style={styles.questionCounter}>
+								Question {currentQuestion.questionNumber} of{" "}
+								{quizQuestions.length}
+							</ThemedText>
+							<ThemedText style={styles.scoreCounter}>
+								Score: {score}/{currentQuestionIndex}
+							</ThemedText>
+						</View>
+
+						<View style={styles.questionContainer}>
+							<ThemedText style={styles.questionText}>
+								What is the name of this plant?
+							</ThemedText>
+
+							<View style={styles.plantInfoCard}>
+								<ThemedText style={styles.plantScientificName}>
+									{currentQuestion.plant.name}
+								</ThemedText>
+								{currentQuestion.plant.probability && (
+									<ThemedText style={styles.plantConfidence}>
+										Confidence:{" "}
+										{(currentQuestion.plant.probability * 100).toFixed(1)}%
+									</ThemedText>
+								)}
+								<ThemedText style={styles.plantScannedDate}>
+									Scanned on{" "}
+									{new Date(
+										currentQuestion.plant.scannedAt
+									).toLocaleDateString()}
+								</ThemedText>
+							</View>
+						</View>
+
+						<View style={styles.optionsContainer}>
+							{currentQuestion.options.map((option, index) => {
+								const isSelected = selectedAnswer === option;
+								const isCorrect = option === currentQuestion.correctAnswer;
+								const showFeedback = selectedAnswer !== null;
+
+								let optionStyle = styles.optionButton;
+								if (showFeedback) {
+									if (isSelected && isCorrect) {
+										optionStyle = styles.optionCorrect;
+									} else if (isSelected && !isCorrect) {
+										optionStyle = styles.optionWrong;
+									} else if (isCorrect) {
+										optionStyle = styles.optionCorrect;
+									}
+								}
+
+								return (
+									<TouchableOpacity
+										key={index}
+										style={optionStyle}
+										onPress={() => handleAnswerSelect(option)}
+										disabled={selectedAnswer !== null}
+									>
+										<Text style={styles.optionLetter}>
+											{String.fromCharCode(65 + index)}
+										</Text>
+										<ThemedText style={styles.optionText}>{option}</ThemedText>
+										{showFeedback && isCorrect && (
+											<Text style={styles.optionIcon}>✓</Text>
+										)}
+										{showFeedback && isSelected && !isCorrect && (
+											<Text style={styles.optionIcon}>✗</Text>
+										)}
+									</TouchableOpacity>
+								);
+							})}
+						</View>
+
+						{selectedAnswer && (
+							<TouchableOpacity
+								style={styles.nextButton}
+								onPress={handleNextQuestion}
+							>
+								<Text style={styles.nextButtonText}>
+									{currentQuestionIndex < quizQuestions.length - 1
+										? "Next Question →"
+										: "View Results"}
+								</Text>
+							</TouchableOpacity>
+						)}
+					</ScrollView>
+				</ThemedView>
+			);
+		}
+
+		// Show quiz start screen
 		return (
 			<ThemedView style={styles.container}>
 				<ScrollView
@@ -87,11 +301,11 @@ const Quiz = () => {
 
 					<View style={styles.quizPendingContainer}>
 						<ThemedText style={styles.quizPendingTitle}>
-							Complete the Quiz to Continue
+							Test Your Plant Knowledge
 						</ThemedText>
 						<ThemedText style={styles.quizPendingSubtext}>
-							You've scanned {batchProgress.current} plants. Review them below
-							and complete the quiz to unlock more scanning!
+							You've scanned {batchProgress.current} plants. Take this quiz to
+							unlock more scanning!
 						</ThemedText>
 					</View>
 
@@ -121,25 +335,13 @@ const Quiz = () => {
 					</View>
 
 					<TouchableOpacity
-						style={[
-							styles.completeQuizButton,
-							isCompletingQuiz && styles.completeQuizButtonDisabled,
-						]}
-						onPress={handleCompleteQuiz}
-						disabled={isCompletingQuiz}
+						style={styles.startQuizButton}
+						onPress={handleStartQuiz}
 					>
-						{isCompletingQuiz ? (
-							<ActivityIndicator color="white" />
-						) : (
-							<>
-								<Text style={styles.completeQuizButtonText}>
-									✅ Complete Quiz
-								</Text>
-								<Text style={styles.completeQuizButtonSubtext}>
-									(Actual quiz coming soon)
-								</Text>
-							</>
-						)}
+						<Text style={styles.startQuizButtonText}>🚀 Start Quiz</Text>
+						<Text style={styles.startQuizButtonSubtext}>
+							{quizQuestions.length} questions • Passing grade: 60%
+						</Text>
 					</TouchableOpacity>
 				</ScrollView>
 			</ThemedView>
@@ -404,7 +606,7 @@ const styles = StyleSheet.create({
 		fontSize: 12,
 		opacity: 0.6,
 	},
-	completeQuizButton: {
+	startQuizButton: {
 		backgroundColor: "#5856D6",
 		padding: 20,
 		borderRadius: 15,
@@ -413,19 +615,185 @@ const styles = StyleSheet.create({
 		maxWidth: 400,
 		marginTop: 10,
 	},
-	completeQuizButtonDisabled: {
+	startQuizButtonText: {
+		color: "white",
+		fontSize: 20,
+		fontWeight: "bold",
+	},
+	startQuizButtonSubtext: {
+		color: "white",
+		fontSize: 13,
+		marginTop: 5,
+		opacity: 0.9,
+	},
+	quizHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		width: "100%",
+		maxWidth: 400,
+		marginBottom: 20,
+		paddingHorizontal: 10,
+	},
+	questionCounter: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#5856D6",
+	},
+	scoreCounter: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#34C759",
+	},
+	questionContainer: {
+		width: "100%",
+		maxWidth: 400,
+		marginBottom: 20,
+	},
+	questionText: {
+		fontSize: 20,
+		fontWeight: "bold",
+		textAlign: "center",
+		marginBottom: 20,
+	},
+	plantInfoCard: {
+		backgroundColor: "rgba(88, 86, 214, 0.1)",
+		padding: 20,
+		borderRadius: 15,
+		borderWidth: 2,
+		borderColor: "#5856D6",
+		alignItems: "center",
+	},
+	plantScientificName: {
+		fontSize: 16,
+		fontWeight: "600",
+		marginBottom: 8,
+		fontStyle: "italic",
+	},
+	plantConfidence: {
+		fontSize: 14,
+		opacity: 0.7,
+		marginBottom: 4,
+	},
+	plantScannedDate: {
+		fontSize: 12,
 		opacity: 0.6,
 	},
-	completeQuizButtonText: {
+	optionsContainer: {
+		width: "100%",
+		maxWidth: 400,
+		gap: 12,
+	},
+	optionButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "rgba(120, 120, 128, 0.1)",
+		padding: 16,
+		borderRadius: 12,
+		borderWidth: 2,
+		borderColor: "transparent",
+	},
+	optionCorrect: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "rgba(52, 199, 89, 0.15)",
+		padding: 16,
+		borderRadius: 12,
+		borderWidth: 2,
+		borderColor: "#34C759",
+	},
+	optionWrong: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "rgba(255, 59, 48, 0.15)",
+		padding: 16,
+		borderRadius: 12,
+		borderWidth: 2,
+		borderColor: "#FF3B30",
+	},
+	optionLetter: {
+		fontSize: 18,
+		fontWeight: "bold",
+		color: "#5856D6",
+		marginRight: 12,
+		width: 30,
+		textAlign: "center",
+	},
+	optionText: {
+		fontSize: 16,
+		flex: 1,
+	},
+	optionIcon: {
+		fontSize: 20,
+		marginLeft: 10,
+	},
+	nextButton: {
+		backgroundColor: "#34C759",
+		padding: 18,
+		borderRadius: 12,
+		alignItems: "center",
+		width: "100%",
+		maxWidth: 400,
+		marginTop: 20,
+	},
+	nextButtonText: {
 		color: "white",
 		fontSize: 18,
 		fontWeight: "bold",
 	},
-	completeQuizButtonSubtext: {
-		color: "white",
-		fontSize: 12,
-		marginTop: 5,
+	resultContainer: {
+		alignItems: "center",
+		padding: 40,
+		borderRadius: 20,
+		borderWidth: 3,
+		width: "100%",
+		maxWidth: 400,
+		marginBottom: 30,
+	},
+	resultPassed: {
+		backgroundColor: "rgba(52, 199, 89, 0.1)",
+		borderColor: "#34C759",
+	},
+	resultFailed: {
+		backgroundColor: "rgba(255, 149, 0, 0.1)",
+		borderColor: "#FF9500",
+	},
+	resultIcon: {
+		fontSize: 64,
+		marginBottom: 20,
+	},
+	resultScore: {
+		fontSize: 48,
+		fontWeight: "bold",
+		marginBottom: 10,
+	},
+	resultPercentage: {
+		fontSize: 32,
+		fontWeight: "600",
 		opacity: 0.8,
+		marginBottom: 20,
+	},
+	resultMessage: {
+		fontSize: 16,
+		textAlign: "center",
+		lineHeight: 24,
+		opacity: 0.8,
+	},
+	finishButton: {
+		backgroundColor: "#5856D6",
+		padding: 20,
+		borderRadius: 15,
+		alignItems: "center",
+		width: "100%",
+		maxWidth: 400,
+	},
+	finishButtonDisabled: {
+		opacity: 0.6,
+	},
+	finishButtonText: {
+		color: "white",
+		fontSize: 18,
+		fontWeight: "bold",
 	},
 });
 
