@@ -4,10 +4,7 @@ import {
 	completeQuiz,
 	generateQuizQuestions,
 	getCurrentQuizBatch,
-	getMinScansRequired,
 	getQuizBatchProgress,
-	getSuccessfulScanCount,
-	hasQuizAccess,
 	isQuizPending,
 	type QuizQuestion,
 } from "@/services/scanTracker";
@@ -33,9 +30,6 @@ const Quiz = () => {
 	const [showResult, setShowResult] = useState(false);
 	const [quizStarted, setQuizStarted] = useState(false);
 
-	const scanCount = getSuccessfulScanCount(user);
-	const quizAccess = hasQuizAccess(user);
-	const minScansRequired = getMinScansRequired();
 	const quizPending = isQuizPending(user);
 	const currentBatch = getCurrentQuizBatch(user);
 	const batchProgress = getQuizBatchProgress(user);
@@ -233,7 +227,7 @@ const Quiz = () => {
 						</View>
 
 						<View style={styles.optionsContainer}>
-							{currentQuestion.options.map((option, index) => {
+							{currentQuestion.options.map((option: string, index: number) => {
 								const isSelected = selectedAnswer === option;
 								const isCorrect = option === currentQuestion.correctAnswer;
 								const showFeedback = selectedAnswer !== null;
@@ -354,52 +348,24 @@ const Quiz = () => {
 				🌱 Quiz
 			</ThemedText>
 
-			<View style={styles.statsContainer}>
-				<ThemedText style={styles.statsLabel}>Your Successful Scans</ThemedText>
-				<View style={styles.countBadge}>
-					<ThemedText style={styles.countNumber}>{scanCount}</ThemedText>
+			<View style={styles.cycleContainer}>
+				<ThemedText style={styles.cycleTitle}>Quiz Cycle Progress</ThemedText>
+				<View style={styles.cycleBadge}>
+					<Text style={styles.cycleCount}>{batchProgress.current}</Text>
+					<Text style={styles.cycleTotal}> / {batchProgress.total}</Text>
 				</View>
-				<ThemedText style={styles.statsSubtext}>
-					{scanCount === 0
-						? "Start scanning plants to track your progress!"
-						: scanCount === 1
-							? "Great start! Keep scanning to learn more plants."
-							: `Amazing! You've identified ${scanCount} plants so far!`}
+				<ThemedText style={styles.cycleSubtext}>
+					{batchProgress.current === 0
+						? "Scan 5 plants to unlock a new quiz!"
+						: batchProgress.current === 1
+							? "Great start! Scan 4 more plants."
+							: `${batchProgress.total - batchProgress.current} more ${
+									batchProgress.total - batchProgress.current === 1
+										? "scan"
+										: "scans"
+								} until quiz unlocks!`}
 				</ThemedText>
 			</View>
-
-			{batchProgress.current > 0 && (
-				<View style={styles.progressContainer}>
-					<ThemedText style={styles.progressLabel}>Current Progress</ThemedText>
-					<ThemedText style={styles.progressText}>
-						{batchProgress.current}/{batchProgress.total} scans until next quiz
-					</ThemedText>
-				</View>
-			)}
-
-			{quizAccess ? (
-				<View style={styles.accessGrantedContainer}>
-					<ThemedText style={styles.accessGrantedText}>
-						✅ Quiz Access Granted!
-					</ThemedText>
-					<ThemedText style={styles.comingSoon}>
-						🎯 Quiz feature coming soon!
-					</ThemedText>
-				</View>
-			) : (
-				<View style={styles.accessDeniedContainer}>
-					<ThemedText style={styles.accessDeniedText}>
-						🔒 Quiz Locked
-					</ThemedText>
-					<ThemedText style={styles.requirementText}>
-						Scan {minScansRequired - scanCount} more plant
-						{minScansRequired - scanCount > 1 ? "s" : ""} to unlock the quiz!
-					</ThemedText>
-					<ThemedText style={styles.minScansText}>
-						({scanCount}/{minScansRequired} scans completed)
-					</ThemedText>
-				</View>
-			)}
 		</ThemedView>
 	);
 };
@@ -423,115 +389,45 @@ const styles = StyleSheet.create({
 		marginBottom: 40,
 		marginTop: 20,
 	},
-	statsContainer: {
+	cycleContainer: {
 		alignItems: "center",
-		backgroundColor: "rgba(52, 199, 89, 0.1)",
+		backgroundColor: "rgba(88, 86, 214, 0.1)",
 		padding: 30,
 		borderRadius: 20,
 		width: "100%",
 		maxWidth: 400,
-		marginBottom: 40,
 	},
-	statsLabel: {
+	cycleTitle: {
 		fontSize: 18,
 		fontWeight: "600",
 		marginBottom: 20,
+		textAlign: "center",
 	},
-	countBadge: {
-		backgroundColor: "#34C759",
-		width: 100,
-		height: 100,
-		borderRadius: 50,
-		justifyContent: "center",
+	cycleBadge: {
+		flexDirection: "row",
 		alignItems: "center",
-		marginBottom: 20,
-		shadowColor: "#000",
-		shadowOffset: {
-			width: 0,
-			height: 2,
-		},
-		shadowOpacity: 0.25,
-		shadowRadius: 3.84,
-		elevation: 5,
+		backgroundColor: "#5856D6",
+		paddingHorizontal: 20,
+		paddingVertical: 10,
+		borderRadius: 999,
+		marginBottom: 15,
 	},
-	countNumber: {
-		fontSize: 48,
+	cycleCount: {
+		fontSize: 32,
 		fontWeight: "bold",
 		color: "#fff",
+		marginRight: 6,
 	},
-	statsSubtext: {
+	cycleTotal: {
+		fontSize: 20,
+		fontWeight: "600",
+		color: "#fff",
+	},
+	cycleSubtext: {
 		fontSize: 14,
 		textAlign: "center",
 		opacity: 0.8,
-		paddingHorizontal: 20,
-	},
-	progressContainer: {
-		alignItems: "center",
-		padding: 15,
-		borderRadius: 15,
-		backgroundColor: "rgba(88, 86, 214, 0.1)",
-		borderWidth: 1,
-		borderColor: "#5856D6",
-		width: "100%",
-		maxWidth: 400,
-		marginBottom: 20,
-	},
-	progressLabel: {
-		fontSize: 14,
-		fontWeight: "600",
-		marginBottom: 5,
-		opacity: 0.7,
-	},
-	progressText: {
-		fontSize: 16,
-		fontWeight: "bold",
-		color: "#5856D6",
-	},
-	comingSoon: {
-		fontSize: 16,
-		opacity: 0.6,
-		fontStyle: "italic",
-	},
-	accessGrantedContainer: {
-		alignItems: "center",
-		padding: 20,
-		borderRadius: 15,
-		backgroundColor: "rgba(52, 199, 89, 0.15)",
-		borderWidth: 2,
-		borderColor: "#34C759",
-		width: "100%",
-		maxWidth: 400,
-	},
-	accessGrantedText: {
-		fontSize: 20,
-		fontWeight: "bold",
-		color: "#34C759",
-		marginBottom: 10,
-	},
-	accessDeniedContainer: {
-		alignItems: "center",
-		padding: 20,
-		borderRadius: 15,
-		backgroundColor: "rgba(255, 149, 0, 0.1)",
-		borderWidth: 2,
-		borderColor: "#FF9500",
-		width: "100%",
-		maxWidth: 400,
-	},
-	accessDeniedText: {
-		fontSize: 20,
-		fontWeight: "bold",
-		color: "#FF9500",
-		marginBottom: 10,
-	},
-	requirementText: {
-		fontSize: 16,
-		textAlign: "center",
-		marginBottom: 5,
-	},
-	minScansText: {
-		fontSize: 14,
-		opacity: 0.7,
+		lineHeight: 20,
 	},
 	quizPendingContainer: {
 		alignItems: "center",

@@ -70,7 +70,7 @@ export default function ScanScreen() {
 			setIsCapturing(true);
 			try {
 				const photo = await cameraRef.current.takePictureAsync({
-					quality: 1.0,
+					quality: 0.7, // Reduced from 1.0 to avoid large file sizes
 				});
 
 				if (photo && photo.uri) {

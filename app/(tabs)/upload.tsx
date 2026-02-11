@@ -46,7 +46,7 @@ export default function UploadScreen() {
 			mediaTypes: ["images"],
 			allowsEditing: true,
 			aspect: [4, 3],
-			quality: 1,
+			quality: 0.7, // Reduced from 1 to avoid large file sizes
 		});
 
 		if (!result.canceled && result.assets[0]) {

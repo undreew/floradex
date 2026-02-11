@@ -119,12 +119,36 @@ interface IdentifyPlantOptions {
  */
 async function imageToBase64(uri: string): Promise<string> {
 	try {
+		console.log("[imageToBase64] Converting URI:", uri);
+
+		// Get file info to check size
+		const fileInfo = await FileSystem.getInfoAsync(uri);
+		console.log("[imageToBase64] File info:", fileInfo);
+
+		if (!fileInfo.exists) {
+			throw new Error(`File does not exist at URI: ${uri}`);
+		}
+
+		// Warn if file is too large (>5MB)
+		if (fileInfo.size && fileInfo.size > 5 * 1024 * 1024) {
+			console.warn(
+				`[imageToBase64] Large file detected: ${(fileInfo.size / 1024 / 1024).toFixed(2)}MB. This may cause issues.`
+			);
+		}
+
 		const base64 = await FileSystem.readAsStringAsync(uri, {
 			encoding: FileSystem.EncodingType.Base64,
 		});
+
+		console.log(
+			`[imageToBase64] Conversion successful. Base64 length: ${base64.length} chars`
+		);
 		return base64;
 	} catch (error) {
-		console.error("Error converting image to base64:", error);
+		console.error("[imageToBase64] Error:", error);
+		if (error instanceof Error) {
+			throw new Error(`Failed to convert image to base64: ${error.message}`);
+		}
 		throw new Error("Failed to convert image to base64");
 	}
 }
@@ -142,8 +166,14 @@ export async function identifyPlant(
 	}
 
 	try {
+		console.log("[identifyPlant] Starting plant identification...");
+		console.log("[identifyPlant] Image URI:", options.imageUri);
+
 		// Convert image to base64
 		const base64Image = await imageToBase64(options.imageUri);
+		console.log(
+			`[identifyPlant] Base64 conversion complete. Length: ${base64Image.length}`
+		);
 
 		// Prepare request body
 		const requestBody: any = {
@@ -177,29 +207,73 @@ export async function identifyPlant(
 			url += `?${params.toString()}`;
 		}
 
-		console.log("Sending identification request to Plant.id...");
+		console.log("[identifyPlant] Request URL:", url);
+		console.log(
+			"[identifyPlant] Request body size:",
+			JSON.stringify(requestBody).length,
+			"bytes"
+		);
 
-		const response = await fetch(url, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"Api-Key": API_KEY,
-			},
-			body: JSON.stringify(requestBody),
-		});
+		// Add timeout for the request (30 seconds)
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error("Plant.id API error:", errorText);
-			throw new Error(`Plant.id API error: ${response.status} - ${errorText}`);
+		try {
+			const response = await fetch(url, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"Api-Key": API_KEY,
+				},
+				body: JSON.stringify(requestBody),
+				signal: controller.signal,
+			});
+
+			clearTimeout(timeoutId);
+
+			console.log("[identifyPlant] Response status:", response.status);
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error("[identifyPlant] API error response:", errorText);
+
+				// Parse common error scenarios
+				if (response.status === 401) {
+					throw new Error(
+						"Invalid API key. Please check your EXPO_PUBLIC_PLANT_ID_KEY"
+					);
+				} else if (response.status === 429) {
+					throw new Error("API rate limit exceeded. Please try again later.");
+				} else if (response.status === 400) {
+					throw new Error(
+						"Invalid request. The image may be too large or corrupted."
+					);
+				}
+
+				throw new Error(`API error: ${response.status} - ${errorText}`);
+			}
+
+			const data: PlantIdResponse = await response.json();
+			console.log(
+				"[identifyPlant] Success! Is plant:",
+				data.result?.is_plant?.binary
+			);
+			return data;
+		} catch (fetchError) {
+			clearTimeout(timeoutId);
+			if (fetchError instanceof Error && fetchError.name === "AbortError") {
+				throw new Error(
+					"Request timed out. Please check your internet connection."
+				);
+			}
+			throw fetchError;
 		}
-
-		const data: PlantIdResponse = await response.json();
-		console.log("Plant identification successful!");
-		return data;
 	} catch (error) {
-		console.error("Error identifying plant:", error);
-		throw error;
+		console.error("[identifyPlant] Fatal error:", error);
+		if (error instanceof Error) {
+			throw error;
+		}
+		throw new Error("Unknown error during plant identification");
 	}
 }
 
