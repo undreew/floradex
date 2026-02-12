@@ -58,19 +58,21 @@ export default function ScanScreen() {
 				start={{ x: 0, y: 0 }}
 				end={{ x: 1, y: 1 }}
 			>
-				<View style={styles.permissionCard}>
-					<Text style={styles.permissionIcon}>📷</Text>
-					<Text style={styles.permissionTitle}>Camera Access Required</Text>
-					<Text style={styles.permissionMessage}>
-						We need your permission to use the camera to scan and identify
-						plants
-					</Text>
-					<TouchableOpacity
-						style={styles.permissionButton}
-						onPress={requestPermission}
-					>
-						<Text style={styles.permissionButtonText}>Grant Permission</Text>
-					</TouchableOpacity>
+				<View style={styles.centeredContent}>
+					<View style={styles.permissionCard}>
+						<Text style={styles.permissionIcon}>📷</Text>
+						<Text style={styles.permissionTitle}>Camera Access Required</Text>
+						<Text style={styles.permissionMessage}>
+							We need your permission to use the camera to scan and identify
+							plants
+						</Text>
+						<TouchableOpacity
+							style={styles.permissionButton}
+							onPress={requestPermission}
+						>
+							<Text style={styles.permissionButtonText}>Grant Permission</Text>
+						</TouchableOpacity>
+					</View>
 				</View>
 			</LinearGradient>
 		);
@@ -253,20 +255,22 @@ export default function ScanScreen() {
 				start={{ x: 0, y: 0 }}
 				end={{ x: 1, y: 1 }}
 			>
-				<Text style={styles.headerTitle}>🌿 Plant Scanner</Text>
+				<View style={styles.centeredContent}>
+					<Text style={styles.headerTitle}>🌿 Plant Scanner</Text>
 
-				<View style={styles.blockedContainer}>
-					<Text style={styles.blockedIcon}>🔒</Text>
-					<Text style={styles.blockedTitle}>Scanning Temporarily Locked</Text>
-					<Text style={styles.blockedMessage}>
-						You've scanned {batchProgress.current}{" "}
-						{batchProgress.current === 1 ? "plant" : "plants"}!{"\n\n"}
-						Complete the quiz to unlock more scanning.
-					</Text>
-					<View style={styles.blockedHint}>
-						<Text style={styles.blockedHintText}>
-							💡 Head to the Quiz tab to continue
+					<View style={styles.blockedContainer}>
+						<Text style={styles.blockedIcon}>🔒</Text>
+						<Text style={styles.blockedTitle}>Scanning Temporarily Locked</Text>
+						<Text style={styles.blockedMessage}>
+							You've scanned {batchProgress.current}{" "}
+							{batchProgress.current === 1 ? "plant" : "plants"}!{"\n\n"}
+							Complete the quiz to unlock more scanning.
 						</Text>
+						<View style={styles.blockedHint}>
+							<Text style={styles.blockedHintText}>
+								💡 Head to the Quiz tab to continue
+							</Text>
+						</View>
 					</View>
 				</View>
 			</LinearGradient>
@@ -353,6 +357,12 @@ export default function ScanScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+	},
+	centeredContent: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		paddingHorizontal: 20,
 	},
 	scrollContent: {
 		padding: 20,
@@ -550,7 +560,8 @@ const styles = StyleSheet.create({
 		borderRadius: 24,
 		padding: 40,
 		alignItems: "center",
-		marginHorizontal: 20,
+		width: "100%",
+		maxWidth: 400,
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 8 },
 		shadowOpacity: 0.3,
@@ -597,7 +608,8 @@ const styles = StyleSheet.create({
 		borderRadius: 24,
 		backgroundColor: "#ffffff",
 		width: "100%",
-		marginHorizontal: 20,
+		maxWidth: 400,
+		marginTop: 20,
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 8 },
 		shadowOpacity: 0.3,

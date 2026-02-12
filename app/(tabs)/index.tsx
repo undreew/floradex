@@ -35,20 +35,6 @@ export default function HomeScreen() {
 				style={styles.scrollView}
 				showsVerticalScrollIndicator={false}
 			>
-				{/* Stats Cards */}
-				<View style={styles.statsContainer}>
-					<View style={styles.statCard}>
-						<Text style={styles.statNumber}>0</Text>
-						<Text style={styles.statLabel}>Plants Scanned</Text>
-						<Text style={styles.statIcon}>🔍</Text>
-					</View>
-					<View style={styles.statCard}>
-						<Text style={styles.statNumber}>0</Text>
-						<Text style={styles.statLabel}>Collections</Text>
-						<Text style={styles.statIcon}>📚</Text>
-					</View>
-				</View>
-
 				{/* Quick Actions */}
 				<View style={styles.section}>
 					<Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -102,18 +88,6 @@ export default function HomeScreen() {
 					</View>
 				</View>
 
-				{/* Recent Activity */}
-				<View style={styles.section}>
-					<Text style={styles.sectionTitle}>Recent Activity</Text>
-					<View style={styles.emptyState}>
-						<Text style={styles.emptyIcon}>🌱</Text>
-						<Text style={styles.emptyText}>No scans yet</Text>
-						<Text style={styles.emptySubtext}>
-							Start scanning plants to see your activity here
-						</Text>
-					</View>
-				</View>
-
 				{/* Sign Out Button */}
 				<View style={styles.section}>
 					<SignOutButton />
@@ -163,41 +137,6 @@ const styles = StyleSheet.create({
 	},
 	scrollView: {
 		flex: 1,
-	},
-	statsContainer: {
-		flexDirection: "row",
-		paddingHorizontal: 20,
-		paddingTop: 20,
-		gap: 12,
-	},
-	statCard: {
-		flex: 1,
-		backgroundColor: "#ffffff",
-		borderRadius: 16,
-		padding: 20,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.1,
-		shadowRadius: 8,
-		elevation: 3,
-		position: "relative",
-	},
-	statNumber: {
-		fontSize: 32,
-		fontWeight: "bold",
-		color: "#667eea",
-		marginBottom: 4,
-	},
-	statLabel: {
-		fontSize: 14,
-		color: "#6b7280",
-	},
-	statIcon: {
-		fontSize: 24,
-		position: "absolute",
-		top: 16,
-		right: 16,
-		opacity: 0.3,
 	},
 	section: {
 		paddingHorizontal: 20,
@@ -264,32 +203,6 @@ const styles = StyleSheet.create({
 	},
 	actionDescription: {
 		fontSize: 11,
-		color: "#6b7280",
-		textAlign: "center",
-	},
-	emptyState: {
-		backgroundColor: "#ffffff",
-		borderRadius: 16,
-		padding: 40,
-		alignItems: "center",
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.1,
-		shadowRadius: 8,
-		elevation: 3,
-	},
-	emptyIcon: {
-		fontSize: 48,
-		marginBottom: 12,
-	},
-	emptyText: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: "#1f2937",
-		marginBottom: 8,
-	},
-	emptySubtext: {
-		fontSize: 14,
 		color: "#6b7280",
 		textAlign: "center",
 	},

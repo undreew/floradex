@@ -155,20 +155,22 @@ export default function UploadScreen() {
 				start={{ x: 0, y: 0 }}
 				end={{ x: 1, y: 1 }}
 			>
-				<Text style={styles.headerTitle}>📤 Upload Photo</Text>
+				<View style={styles.centeredContent}>
+					<Text style={styles.headerTitle}>📤 Upload Photo</Text>
 
-				<View style={styles.blockedContainer}>
-					<Text style={styles.blockedIcon}>🔒</Text>
-					<Text style={styles.blockedTitle}>Upload Temporarily Locked</Text>
-					<Text style={styles.blockedMessage}>
-						You've scanned {batchProgress.current}{" "}
-						{batchProgress.current === 1 ? "plant" : "plants"}!{"\n\n"}
-						Complete the quiz to unlock more scanning.
-					</Text>
-					<View style={styles.blockedHint}>
-						<Text style={styles.blockedHintText}>
-							💡 Head to the Quiz tab to continue
+					<View style={styles.blockedContainer}>
+						<Text style={styles.blockedIcon}>🔒</Text>
+						<Text style={styles.blockedTitle}>Upload Temporarily Locked</Text>
+						<Text style={styles.blockedMessage}>
+							You've scanned {batchProgress.current}{" "}
+							{batchProgress.current === 1 ? "plant" : "plants"}!{"\n\n"}
+							Complete the quiz to unlock more scanning.
 						</Text>
+						<View style={styles.blockedHint}>
+							<Text style={styles.blockedHintText}>
+								💡 Head to the Quiz tab to continue
+							</Text>
+						</View>
 					</View>
 				</View>
 			</LinearGradient>
@@ -240,6 +242,12 @@ export default function UploadScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+	},
+	centeredContent: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		paddingHorizontal: 20,
 	},
 	scrollContent: {
 		padding: 20,
@@ -373,7 +381,8 @@ const styles = StyleSheet.create({
 		borderRadius: 24,
 		backgroundColor: "#ffffff",
 		width: "100%",
-		marginHorizontal: 20,
+		maxWidth: 400,
+		marginTop: 20,
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 8 },
 		shadowOpacity: 0.3,
