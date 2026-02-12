@@ -6,9 +6,14 @@ import { Redirect } from "expo-router";
 import { StyleSheet } from "react-native";
 
 export default function Index() {
-	const { isSignedIn } = useAuth();
+	const { isSignedIn, isLoaded } = useAuth();
 
-	// Redirect to tabs if user is already signed in
+	// Wait for auth to load
+	if (!isLoaded) {
+		return null;
+	}
+
+	// Redirect to tabs if signed in
 	if (isSignedIn) {
 		return <Redirect href="/(tabs)" />;
 	}

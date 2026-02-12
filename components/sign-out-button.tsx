@@ -1,31 +1,38 @@
 import { ThemedText } from "@/components/themed-text";
 import { useClerk } from "@clerk/clerk-expo";
-import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
 
 export const SignOutButton = () => {
-	// Use `useClerk()` to access the `signOut()` function
 	const { signOut } = useClerk();
-	const router = useRouter();
+	const [isSigningOut, setIsSigningOut] = useState(false);
 
 	const handleSignOut = async () => {
+		if (isSigningOut) return;
+
 		try {
+			setIsSigningOut(true);
+			// Just call signOut - the auth state change will trigger the redirect in TabLayout
 			await signOut();
-			// Redirect to your desired page
-			router.replace("/");
 		} catch (err) {
-			// See https://clerk.com/docs/guides/development/custom-flows/error-handling
-			// for more info on error handling
-			console.error(JSON.stringify(err, null, 2));
+			console.error("Sign out error:", err);
+			setIsSigningOut(false);
 		}
 	};
 
 	return (
 		<Pressable
-			style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+			style={({ pressed }) => [
+				styles.button,
+				pressed && styles.buttonPressed,
+				isSigningOut && styles.buttonDisabled,
+			]}
 			onPress={handleSignOut}
+			disabled={isSigningOut}
 		>
-			<ThemedText style={styles.buttonText}>Sign out</ThemedText>
+			<ThemedText style={styles.buttonText}>
+				{isSigningOut ? "Signing out..." : "Sign out"}
+			</ThemedText>
 		</Pressable>
 	);
 };
@@ -40,6 +47,9 @@ const styles = StyleSheet.create({
 	},
 	buttonPressed: {
 		opacity: 0.7,
+	},
+	buttonDisabled: {
+		opacity: 0.5,
 	},
 	buttonText: {
 		color: "#fff",
