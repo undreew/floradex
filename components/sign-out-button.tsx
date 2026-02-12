@@ -1,48 +1,67 @@
-import { ThemedText } from "@/components/themed-text";
+import { userProfileService } from "@/services/userProfile";
 import { useClerk } from "@clerk/clerk-expo";
-import { useRouter } from "expo-router";
-import { Pressable, StyleSheet } from "react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 export const SignOutButton = () => {
-	// Use `useClerk()` to access the `signOut()` function
 	const { signOut } = useClerk();
-	const router = useRouter();
+	const [isSigningOut, setIsSigningOut] = useState(false);
 
 	const handleSignOut = async () => {
+		if (isSigningOut) return;
+
 		try {
+			setIsSigningOut(true);
+			// Clear user profile data
+			await userProfileService.clearProfile();
+			// Just call signOut - the auth state change will trigger the redirect in TabLayout
 			await signOut();
-			// Redirect to your desired page
-			router.replace("/");
 		} catch (err) {
-			// See https://clerk.com/docs/guides/development/custom-flows/error-handling
-			// for more info on error handling
-			console.error(JSON.stringify(err, null, 2));
+			console.error("Sign out error:", err);
+			setIsSigningOut(false);
 		}
 	};
 
 	return (
 		<Pressable
-			style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+			style={({ pressed }) => [
+				styles.button,
+				pressed && styles.buttonPressed,
+				isSigningOut && styles.buttonDisabled,
+			]}
 			onPress={handleSignOut}
+			disabled={isSigningOut}
 		>
-			<ThemedText style={styles.buttonText}>Sign out</ThemedText>
+			<Text style={styles.buttonText}>
+				{isSigningOut ? "Signing out..." : "Sign Out"}
+			</Text>
 		</Pressable>
 	);
 };
 
 const styles = StyleSheet.create({
 	button: {
-		backgroundColor: "#0a7ea4",
-		paddingVertical: 12,
+		backgroundColor: "#ef4444",
+		paddingVertical: 14,
 		paddingHorizontal: 24,
-		borderRadius: 8,
+		borderRadius: 12,
 		alignItems: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
 	},
 	buttonPressed: {
-		opacity: 0.7,
+		opacity: 0.85,
+		transform: [{ scale: 0.98 }],
+	},
+	buttonDisabled: {
+		opacity: 0.6,
 	},
 	buttonText: {
 		color: "#fff",
 		fontWeight: "600",
+		fontSize: 15,
 	},
 });

@@ -13,6 +13,7 @@ interface OAuthButtonProps {
 	label: string;
 	icon?: string;
 	backgroundColor?: string;
+	textColor?: string;
 }
 
 export function OAuthButton({
@@ -20,13 +21,16 @@ export function OAuthButton({
 	label,
 	icon,
 	backgroundColor = "#0a7ea4",
+	textColor = "#fff",
 }: OAuthButtonProps) {
 	const router = useRouter();
 	const { startOAuthFlow } = useOAuth({ strategy: provider });
 
 	const onPress = React.useCallback(async () => {
 		try {
-			const { createdSessionId, setActive } = await startOAuthFlow();
+			const { createdSessionId, setActive } = await startOAuthFlow({
+				redirectUrl: "floradex://oauth-native-callback",
+			});
 
 			if (createdSessionId) {
 				await setActive!({ session: createdSessionId });
@@ -48,8 +52,10 @@ export function OAuthButton({
 			onPress={onPress}
 		>
 			<View style={styles.buttonContent}>
-				{icon && <Text style={styles.icon}>{icon}</Text>}
-				<Text style={styles.buttonText}>{label}</Text>
+				{icon && (
+					<Text style={[styles.icon, { color: textColor }]}>{icon}</Text>
+				)}
+				<Text style={[styles.buttonText, { color: textColor }]}>{label}</Text>
 			</View>
 		</Pressable>
 	);
@@ -57,27 +63,33 @@ export function OAuthButton({
 
 const styles = StyleSheet.create({
 	button: {
-		paddingVertical: 12,
+		paddingVertical: 15,
 		paddingHorizontal: 24,
-		borderRadius: 8,
+		borderRadius: 12,
 		alignItems: "center",
-		marginTop: 8,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.15,
+		shadowRadius: 4,
+		elevation: 3,
 	},
 	buttonPressed: {
-		opacity: 0.7,
+		opacity: 0.85,
+		transform: [{ scale: 0.98 }],
 	},
 	buttonContent: {
 		flexDirection: "row",
 		alignItems: "center",
-		gap: 8,
+		gap: 10,
 	},
 	icon: {
-		fontSize: 20,
+		fontSize: 18,
 		color: "#fff",
+		fontWeight: "bold",
 	},
 	buttonText: {
 		color: "#fff",
 		fontWeight: "600",
-		fontSize: 16,
+		fontSize: 15,
 	},
 });
