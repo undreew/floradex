@@ -1,5 +1,3 @@
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
 import {
 	completeQuiz,
 	generateQuizQuestions,
@@ -9,6 +7,7 @@ import {
 	type QuizQuestion,
 } from "@/services/scanTracker";
 import { useUser } from "@clerk/clerk-expo";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -138,9 +137,14 @@ const Quiz = () => {
 
 	if (!isLoaded) {
 		return (
-			<ThemedView style={styles.container}>
-				<ActivityIndicator size="large" />
-			</ThemedView>
+			<LinearGradient
+				colors={["#f59e0b", "#d97706"]}
+				style={styles.container}
+				start={{ x: 0, y: 0 }}
+				end={{ x: 1, y: 1 }}
+			>
+				<ActivityIndicator size="large" color="#fff" />
+			</LinearGradient>
 		);
 	}
 
@@ -152,33 +156,33 @@ const Quiz = () => {
 			const passed = percentage >= 60;
 
 			return (
-				<ThemedView style={styles.container}>
+				<LinearGradient
+					colors={["#f59e0b", "#d97706"]}
+					style={styles.container}
+					start={{ x: 0, y: 0 }}
+					end={{ x: 1, y: 1 }}
+				>
 					<ScrollView
 						style={styles.scrollView}
 						contentContainerStyle={styles.scrollContent}
 					>
-						<ThemedText type="title" style={styles.title}>
+						<Text style={styles.headerTitle}>
 							{passed ? "🎉 Great Job!" : "📊 Quiz Complete"}
-						</ThemedText>
+						</Text>
 
-						<View
-							style={[
-								styles.resultContainer,
-								passed ? styles.resultPassed : styles.resultFailed,
-							]}
-						>
+						<View style={styles.resultContainer}>
 							<Text style={styles.resultIcon}>{passed ? "✅" : "📝"}</Text>
-							<ThemedText style={styles.resultScore}>
+							<Text style={styles.resultScore}>
 								{score} / {quizQuestions.length}
-							</ThemedText>
-							<ThemedText style={styles.resultPercentage}>
+							</Text>
+							<Text style={styles.resultPercentage}>
 								{percentage.toFixed(0)}%
-							</ThemedText>
-							<ThemedText style={styles.resultMessage}>
+							</Text>
+							<Text style={styles.resultMessage}>
 								{passed
 									? "Excellent work! You can now continue scanning plants."
 									: "Keep learning! You can retake the quiz or continue anyway."}
-							</ThemedText>
+							</Text>
 						</View>
 
 						<TouchableOpacity
@@ -198,7 +202,7 @@ const Quiz = () => {
 							)}
 						</TouchableOpacity>
 					</ScrollView>
-				</ThemedView>
+				</LinearGradient>
 			);
 		}
 
@@ -207,25 +211,31 @@ const Quiz = () => {
 			const currentQuestion = quizQuestions[currentQuestionIndex];
 
 			return (
-				<ThemedView style={styles.container}>
+				<LinearGradient
+					colors={["#f59e0b", "#d97706"]}
+					style={styles.container}
+					start={{ x: 0, y: 0 }}
+					end={{ x: 1, y: 1 }}
+				>
 					<ScrollView
 						style={styles.scrollView}
 						contentContainerStyle={styles.scrollContent}
+						showsVerticalScrollIndicator={false}
 					>
 						<View style={styles.quizHeader}>
-							<ThemedText style={styles.questionCounter}>
+							<Text style={styles.questionCounter}>
 								Question {currentQuestion.questionNumber} of{" "}
 								{quizQuestions.length}
-							</ThemedText>
-							<ThemedText style={styles.scoreCounter}>
+							</Text>
+							<Text style={styles.scoreCounter}>
 								Score: {score}/{currentQuestionIndex}
-							</ThemedText>
+							</Text>
 						</View>
 
-						<View style={styles.questionContainer}>
-							<ThemedText style={styles.questionText}>
+						<View style={styles.questionCard}>
+							<Text style={styles.questionText}>
 								{currentQuestion.questionText}
-							</ThemedText>
+							</Text>
 
 							<View style={styles.plantInfoCard}>
 								{currentQuestion.plant.userPhotoUri && (
@@ -235,21 +245,21 @@ const Quiz = () => {
 										resizeMode="cover"
 									/>
 								)}
-								<ThemedText style={styles.plantScientificName}>
+								<Text style={styles.plantScientificName}>
 									{currentQuestion.displayName}
-								</ThemedText>
+								</Text>
 								{currentQuestion.plant.probability && (
-									<ThemedText style={styles.plantConfidence}>
+									<Text style={styles.plantConfidence}>
 										Confidence:{" "}
 										{(currentQuestion.plant.probability * 100).toFixed(1)}%
-									</ThemedText>
+									</Text>
 								)}
-								<ThemedText style={styles.plantScannedDate}>
+								<Text style={styles.plantScannedDate}>
 									Scanned on{" "}
 									{new Date(
 										currentQuestion.plant.scannedAt
 									).toLocaleDateString()}
-								</ThemedText>
+								</Text>
 							</View>
 						</View>
 
@@ -280,7 +290,7 @@ const Quiz = () => {
 										<Text style={styles.optionLetter}>
 											{String.fromCharCode(65 + index)}
 										</Text>
-										<ThemedText style={styles.optionText}>{option}</ThemedText>
+										<Text style={styles.optionText}>{option}</Text>
 										{showFeedback && isCorrect && (
 											<Text style={styles.optionIcon}>✓</Text>
 										)}
@@ -305,36 +315,38 @@ const Quiz = () => {
 							</TouchableOpacity>
 						)}
 					</ScrollView>
-				</ThemedView>
+				</LinearGradient>
 			);
 		}
 
 		// Show quiz start screen
 		return (
-			<ThemedView style={styles.container}>
+			<LinearGradient
+				colors={["#f59e0b", "#d97706"]}
+				style={styles.container}
+				start={{ x: 0, y: 0 }}
+				end={{ x: 1, y: 1 }}
+			>
 				<ScrollView
 					style={styles.scrollView}
 					contentContainerStyle={styles.scrollContent}
+					showsVerticalScrollIndicator={false}
 				>
-					<ThemedText type="title" style={styles.title}>
-						🎯 Quiz Ready!
-					</ThemedText>
+					<Text style={styles.headerTitle}>🎯 Quiz Ready!</Text>
 
 					<View style={styles.quizPendingContainer}>
-						<ThemedText style={styles.quizPendingTitle}>
+						<Text style={styles.quizPendingTitle}>
 							Test Your Plant Knowledge
-						</ThemedText>
-						<ThemedText style={styles.quizPendingSubtext}>
+						</Text>
+						<Text style={styles.quizPendingSubtext}>
 							You've scanned {batchProgress.current}{" "}
 							{batchProgress.current === 1 ? "plant" : "plants"}. Take this quiz
 							to unlock more scanning!
-						</ThemedText>
+						</Text>
 					</View>
 
 					<View style={styles.plantsContainer}>
-						<ThemedText style={styles.plantsTitle}>
-							📚 Plants You've Scanned
-						</ThemedText>
+						<Text style={styles.plantsTitle}>📚 Plants You've Scanned</Text>
 						{currentBatch.map((plant, index) => (
 							<View key={plant.id} style={styles.plantCard}>
 								{plant.userPhotoUri && (
@@ -351,26 +363,26 @@ const Quiz = () => {
 											{(plant.probability * 100).toFixed(1)}%
 										</Text>
 									</View>
-									<ThemedText style={styles.plantName}>{plant.name}</ThemedText>
+									<Text style={styles.plantName}>{plant.name}</Text>
 									{plant.commonNames && plant.commonNames.length > 0 && (
-										<ThemedText style={styles.plantCommonName}>
+										<Text style={styles.plantCommonName}>
 											({plant.commonNames[0]})
-										</ThemedText>
+										</Text>
 									)}
-									<ThemedText style={styles.plantDate}>
+									<Text style={styles.plantDate}>
 										Scanned: {new Date(plant.scannedAt).toLocaleDateString()}
-									</ThemedText>
+									</Text>
 									{plant.taxonomy && (
 										<View style={styles.taxonomyInfo}>
 											{plant.taxonomy.genus && (
-												<ThemedText style={styles.taxonomyText}>
+												<Text style={styles.taxonomyText}>
 													Genus: {plant.taxonomy.genus}
-												</ThemedText>
+												</Text>
 											)}
 											{plant.taxonomy.family && (
-												<ThemedText style={styles.taxonomyText}>
+												<Text style={styles.taxonomyText}>
 													Family: {plant.taxonomy.family}
-												</ThemedText>
+												</Text>
 											)}
 										</View>
 									)}
@@ -388,9 +400,9 @@ const Quiz = () => {
 											);
 										}}
 									>
-										<ThemedText style={styles.debugButtonText}>
+										<Text style={styles.debugButtonText}>
 											🔍 View Plant Data
-										</ThemedText>
+										</Text>
 									</TouchableOpacity>
 								</View>
 							</View>
@@ -417,398 +429,482 @@ const Quiz = () => {
 						</Text>
 					</TouchableOpacity>
 				</ScrollView>
-			</ThemedView>
+			</LinearGradient>
 		);
 	}
 
 	return (
-		<ThemedView style={styles.container}>
-			<ThemedText type="title" style={styles.title}>
-				🌱 Quiz
-			</ThemedText>
+		<LinearGradient
+			colors={["#f59e0b", "#d97706"]}
+			style={styles.container}
+			start={{ x: 0, y: 0 }}
+			end={{ x: 1, y: 1 }}
+		>
+			<ScrollView
+				contentContainerStyle={styles.scrollContent}
+				showsVerticalScrollIndicator={false}
+			>
+				<View style={styles.emptyContainer}>
+					<Text style={styles.emptyIcon}>🌱</Text>
+					<Text style={styles.headerTitle}>Quiz</Text>
 
-			<View style={styles.cycleContainer}>
-				<ThemedText style={styles.cycleTitle}>Quiz Cycle Progress</ThemedText>
-				<View style={styles.cycleBadge}>
-					<Text style={styles.cycleCount}>{batchProgress.current}</Text>
-					<Text style={styles.cycleTotal}> / {batchProgress.total}</Text>
+					<View style={styles.cycleContainer}>
+						<Text style={styles.cycleTitle}>Quiz Cycle Progress</Text>
+						<View style={styles.cycleBadge}>
+							<Text style={styles.cycleCount}>{batchProgress.current}</Text>
+							<Text style={styles.cycleTotal}> / {batchProgress.total}</Text>
+						</View>
+						<Text style={styles.cycleSubtext}>
+							{batchProgress.current === 0
+								? "Scan 1 plant to unlock a new quiz!"
+								: `${batchProgress.total - batchProgress.current} more ${
+										batchProgress.total - batchProgress.current === 1
+											? "scan"
+											: "scans"
+									} until quiz unlocks!`}
+						</Text>
+					</View>
 				</View>
-				<ThemedText style={styles.cycleSubtext}>
-					{batchProgress.current === 0
-						? "Scan 1 plant to unlock a new quiz!"
-						: `${batchProgress.total - batchProgress.current} more ${
-								batchProgress.total - batchProgress.current === 1
-									? "scan"
-									: "scans"
-							} until quiz unlocks!`}
-				</ThemedText>
-			</View>
-		</ThemedView>
+			</ScrollView>
+		</LinearGradient>
 	);
 };
 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 20,
-		alignItems: "center",
-		justifyContent: "center",
 	},
 	scrollView: {
 		flex: 1,
-		width: "100%",
 	},
 	scrollContent: {
-		alignItems: "center",
+		padding: 20,
 		paddingBottom: 40,
 	},
-	title: {
-		marginBottom: 40,
+	headerTitle: {
+		fontSize: 32,
+		fontWeight: "bold",
+		color: "#fff",
+		marginBottom: 20,
 		marginTop: 20,
+		textAlign: "center",
+	},
+	emptyContainer: {
+		flex: 1,
+		alignItems: "center",
+		justifyContent: "center",
+		padding: 20,
+	},
+	emptyIcon: {
+		fontSize: 80,
+		marginBottom: 20,
 	},
 	cycleContainer: {
+		backgroundColor: "#fff",
+		borderRadius: 24,
+		padding: 32,
 		alignItems: "center",
-		backgroundColor: "rgba(88, 86, 214, 0.1)",
-		padding: 30,
-		borderRadius: 20,
 		width: "100%",
-		maxWidth: 400,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.25,
+		shadowRadius: 12,
+		elevation: 8,
 	},
 	cycleTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		marginBottom: 20,
+		fontSize: 20,
+		fontWeight: "700",
+		color: "#1f2937",
+		marginBottom: 16,
 		textAlign: "center",
 	},
 	cycleBadge: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: "#5856D6",
-		paddingHorizontal: 20,
-		paddingVertical: 10,
+		backgroundColor: "#f59e0b",
+		paddingHorizontal: 24,
+		paddingVertical: 12,
 		borderRadius: 999,
-		marginBottom: 15,
+		marginBottom: 16,
+		shadowColor: "#f59e0b",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 4,
 	},
 	cycleCount: {
-		fontSize: 32,
+		fontSize: 36,
 		fontWeight: "bold",
 		color: "#fff",
-		marginRight: 6,
 	},
 	cycleTotal: {
-		fontSize: 20,
+		fontSize: 24,
 		fontWeight: "600",
 		color: "#fff",
+		opacity: 0.9,
 	},
 	cycleSubtext: {
-		fontSize: 14,
+		fontSize: 15,
+		color: "#6b7280",
 		textAlign: "center",
-		opacity: 0.8,
-		lineHeight: 20,
+		lineHeight: 22,
 	},
 	quizPendingContainer: {
+		backgroundColor: "#fff",
+		borderRadius: 20,
+		padding: 24,
+		marginBottom: 20,
 		alignItems: "center",
-		padding: 20,
-		borderRadius: 15,
-		backgroundColor: "rgba(88, 86, 214, 0.15)",
-		borderWidth: 2,
-		borderColor: "#5856D6",
-		width: "100%",
-		maxWidth: 400,
-		marginBottom: 30,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.15,
+		shadowRadius: 8,
+		elevation: 4,
 	},
 	quizPendingTitle: {
-		fontSize: 20,
+		fontSize: 22,
 		fontWeight: "bold",
-		color: "#5856D6",
+		color: "#1f2937",
 		marginBottom: 10,
 		textAlign: "center",
 	},
 	quizPendingSubtext: {
-		fontSize: 14,
+		fontSize: 15,
+		color: "#6b7280",
 		textAlign: "center",
-		opacity: 0.8,
-		lineHeight: 20,
+		lineHeight: 22,
 	},
 	plantsContainer: {
 		width: "100%",
-		maxWidth: 400,
 		marginBottom: 20,
 	},
 	plantsTitle: {
-		fontSize: 18,
-		fontWeight: "bold",
-		marginBottom: 15,
+		fontSize: 20,
+		fontWeight: "700",
+		color: "#fff",
+		marginBottom: 16,
 		textAlign: "center",
 	},
 	plantCard: {
-		backgroundColor: "rgba(52, 199, 89, 0.1)",
-		borderRadius: 12,
-		marginBottom: 10,
-		borderWidth: 1,
-		borderColor: "#34C759",
+		backgroundColor: "#fff",
+		borderRadius: 20,
+		marginBottom: 16,
 		overflow: "hidden",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.15,
+		shadowRadius: 8,
+		elevation: 4,
 	},
 	plantThumbnail: {
 		width: "100%",
-		height: 160,
+		height: 180,
 	},
 	plantCardContent: {
-		padding: 15,
+		padding: 20,
 	},
 	plantHeader: {
 		flexDirection: "row",
 		justifyContent: "space-between",
-		marginBottom: 8,
+		marginBottom: 12,
 	},
 	plantNumber: {
 		fontSize: 14,
 		fontWeight: "bold",
-		color: "#34C759",
+		color: "#f59e0b",
+		backgroundColor: "#fef3c7",
+		paddingHorizontal: 12,
+		paddingVertical: 4,
+		borderRadius: 12,
 	},
 	plantProbability: {
 		fontSize: 14,
 		fontWeight: "600",
-		color: "#34C759",
+		color: "#10b981",
+		backgroundColor: "#d1fae5",
+		paddingHorizontal: 12,
+		paddingVertical: 4,
+		borderRadius: 12,
 	},
 	plantName: {
-		fontSize: 16,
+		fontSize: 18,
 		fontWeight: "bold",
+		color: "#1f2937",
 		marginBottom: 4,
 	},
 	plantCommonName: {
-		fontSize: 14,
+		fontSize: 15,
 		fontStyle: "italic",
-		opacity: 0.7,
-		marginBottom: 4,
+		color: "#6b7280",
+		marginBottom: 8,
 	},
 	plantDate: {
-		fontSize: 12,
-		opacity: 0.6,
+		fontSize: 13,
+		color: "#9ca3af",
 	},
 	taxonomyInfo: {
-		marginTop: 8,
-		paddingTop: 8,
+		marginTop: 12,
+		paddingTop: 12,
 		borderTopWidth: 1,
-		borderTopColor: "rgba(52, 199, 89, 0.3)",
+		borderTopColor: "#e5e7eb",
 	},
 	taxonomyText: {
-		fontSize: 11,
-		opacity: 0.6,
-		marginBottom: 2,
+		fontSize: 13,
+		color: "#6b7280",
+		marginBottom: 4,
 	},
 	debugButton: {
-		marginTop: 10,
-		paddingVertical: 8,
-		paddingHorizontal: 12,
-		backgroundColor: "rgba(88, 86, 214, 0.1)",
-		borderRadius: 6,
-		borderWidth: 1,
-		borderColor: "#5856D6",
+		marginTop: 12,
+		paddingVertical: 10,
+		paddingHorizontal: 16,
+		backgroundColor: "#f3f4f6",
+		borderRadius: 12,
 		alignItems: "center",
 	},
 	debugButtonText: {
-		fontSize: 12,
-		color: "#5856D6",
+		fontSize: 13,
+		color: "#4b5563",
 		fontWeight: "600",
 	},
 	startQuizButton: {
-		backgroundColor: "#5856D6",
-		padding: 20,
-		borderRadius: 15,
+		backgroundColor: "#fff",
+		padding: 24,
+		borderRadius: 20,
 		alignItems: "center",
 		width: "100%",
-		maxWidth: 400,
-		marginTop: 10,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 12,
+		elevation: 8,
 	},
 	startQuizButtonDisabled: {
-		backgroundColor: "#999",
 		opacity: 0.5,
 	},
 	startQuizButtonText: {
-		color: "white",
+		color: "#1f2937",
 		fontSize: 20,
 		fontWeight: "bold",
+		marginBottom: 4,
 	},
 	startQuizButtonSubtext: {
-		color: "white",
-		fontSize: 13,
-		marginTop: 5,
-		opacity: 0.9,
+		color: "#6b7280",
+		fontSize: 14,
+		marginTop: 4,
 	},
 	quizHeader: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
 		width: "100%",
-		maxWidth: 400,
 		marginBottom: 20,
-		paddingHorizontal: 10,
+		backgroundColor: "#fff",
+		padding: 16,
+		borderRadius: 16,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 4,
 	},
 	questionCounter: {
-		fontSize: 16,
+		fontSize: 15,
 		fontWeight: "600",
-		color: "#5856D6",
+		color: "#f59e0b",
 	},
 	scoreCounter: {
-		fontSize: 16,
+		fontSize: 15,
 		fontWeight: "600",
-		color: "#34C759",
+		color: "#10b981",
 	},
-	questionContainer: {
-		width: "100%",
-		maxWidth: 400,
+	questionCard: {
+		backgroundColor: "#fff",
+		borderRadius: 24,
+		padding: 24,
 		marginBottom: 20,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 12,
+		elevation: 8,
 	},
 	questionText: {
-		fontSize: 20,
+		fontSize: 22,
 		fontWeight: "bold",
+		color: "#1f2937",
 		textAlign: "center",
 		marginBottom: 20,
+		lineHeight: 30,
 	},
 	plantInfoCard: {
-		backgroundColor: "rgba(88, 86, 214, 0.1)",
+		backgroundColor: "#fef3c7",
 		padding: 20,
-		borderRadius: 15,
-		borderWidth: 2,
-		borderColor: "#5856D6",
+		borderRadius: 20,
 		alignItems: "center",
 		overflow: "hidden",
+		borderWidth: 2,
+		borderColor: "#fbbf24",
 	},
 	plantImage: {
 		width: "100%",
-		height: 250,
-		borderRadius: 12,
-		marginBottom: 15,
+		height: 200,
+		borderRadius: 16,
+		marginBottom: 16,
 	},
 	plantScientificName: {
-		fontSize: 16,
+		fontSize: 17,
 		fontWeight: "600",
+		color: "#1f2937",
 		marginBottom: 8,
 		fontStyle: "italic",
 	},
 	plantConfidence: {
 		fontSize: 14,
-		opacity: 0.7,
+		color: "#6b7280",
 		marginBottom: 4,
 	},
 	plantScannedDate: {
-		fontSize: 12,
-		opacity: 0.6,
+		fontSize: 13,
+		color: "#9ca3af",
 	},
 	optionsContainer: {
 		width: "100%",
-		maxWidth: 400,
 		gap: 12,
 	},
 	optionButton: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: "rgba(120, 120, 128, 0.1)",
-		padding: 16,
-		borderRadius: 12,
+		backgroundColor: "#fff",
+		padding: 18,
+		borderRadius: 16,
 		borderWidth: 2,
-		borderColor: "transparent",
+		borderColor: "#e5e7eb",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 2,
 	},
 	optionCorrect: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: "rgba(52, 199, 89, 0.15)",
-		padding: 16,
-		borderRadius: 12,
+		backgroundColor: "#d1fae5",
+		padding: 18,
+		borderRadius: 16,
 		borderWidth: 2,
-		borderColor: "#34C759",
+		borderColor: "#10b981",
+		shadowColor: "#10b981",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 4,
 	},
 	optionWrong: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: "rgba(255, 59, 48, 0.15)",
-		padding: 16,
-		borderRadius: 12,
+		backgroundColor: "#fee2e2",
+		padding: 18,
+		borderRadius: 16,
 		borderWidth: 2,
-		borderColor: "#FF3B30",
+		borderColor: "#ef4444",
+		shadowColor: "#ef4444",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+		elevation: 4,
 	},
 	optionLetter: {
 		fontSize: 18,
 		fontWeight: "bold",
-		color: "#5856D6",
+		color: "#f59e0b",
 		marginRight: 12,
-		width: 30,
+		width: 32,
+		height: 32,
 		textAlign: "center",
+		lineHeight: 32,
+		backgroundColor: "#fef3c7",
+		borderRadius: 16,
 	},
 	optionText: {
 		fontSize: 16,
+		color: "#1f2937",
 		flex: 1,
+		fontWeight: "500",
 	},
 	optionIcon: {
 		fontSize: 20,
 		marginLeft: 10,
 	},
 	nextButton: {
-		backgroundColor: "#34C759",
-		padding: 18,
-		borderRadius: 12,
+		backgroundColor: "#fff",
+		padding: 20,
+		borderRadius: 16,
 		alignItems: "center",
 		width: "100%",
-		maxWidth: 400,
 		marginTop: 20,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 12,
+		elevation: 8,
 	},
 	nextButtonText: {
-		color: "white",
+		color: "#1f2937",
 		fontSize: 18,
 		fontWeight: "bold",
 	},
 	resultContainer: {
-		alignItems: "center",
+		backgroundColor: "#fff",
+		borderRadius: 24,
 		padding: 40,
-		borderRadius: 20,
-		borderWidth: 3,
+		alignItems: "center",
 		width: "100%",
-		maxWidth: 400,
-		marginBottom: 30,
-	},
-	resultPassed: {
-		backgroundColor: "rgba(52, 199, 89, 0.1)",
-		borderColor: "#34C759",
-	},
-	resultFailed: {
-		backgroundColor: "rgba(255, 149, 0, 0.1)",
-		borderColor: "#FF9500",
+		marginBottom: 20,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.25,
+		shadowRadius: 12,
+		elevation: 8,
 	},
 	resultIcon: {
-		fontSize: 64,
+		fontSize: 72,
 		marginBottom: 20,
 	},
 	resultScore: {
 		fontSize: 48,
 		fontWeight: "bold",
+		color: "#1f2937",
 		marginBottom: 10,
 	},
 	resultPercentage: {
-		fontSize: 32,
+		fontSize: 36,
 		fontWeight: "600",
-		opacity: 0.8,
+		color: "#f59e0b",
 		marginBottom: 20,
 	},
 	resultMessage: {
 		fontSize: 16,
+		color: "#6b7280",
 		textAlign: "center",
 		lineHeight: 24,
-		opacity: 0.8,
 	},
 	finishButton: {
-		backgroundColor: "#5856D6",
+		backgroundColor: "#fff",
 		padding: 20,
-		borderRadius: 15,
+		borderRadius: 16,
 		alignItems: "center",
 		width: "100%",
-		maxWidth: 400,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 12,
+		elevation: 8,
 	},
 	finishButtonDisabled: {
 		opacity: 0.6,
 	},
 	finishButtonText: {
-		color: "white",
+		color: "#1f2937",
 		fontSize: 18,
 		fontWeight: "bold",
 	},

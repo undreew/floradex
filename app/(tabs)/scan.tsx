@@ -1,6 +1,4 @@
 import { PlantResult } from "@/components/plant-result";
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
 import { identifyPlantSimple, type PlantIdResponse } from "@/services/plantId";
 import {
 	getQuizBatchProgress,
@@ -9,11 +7,13 @@ import {
 } from "@/services/scanTracker";
 import { useUser } from "@clerk/clerk-expo";
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Alert,
 	Image,
+	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -37,27 +37,42 @@ export default function ScanScreen() {
 	if (!permission) {
 		// Camera permissions are still loading
 		return (
-			<ThemedView style={styles.container}>
-				<ActivityIndicator size="large" />
-				<ThemedText style={styles.message}>Loading...</ThemedText>
-			</ThemedView>
+			<LinearGradient
+				colors={["#10b981", "#059669"]}
+				style={styles.container}
+				start={{ x: 0, y: 0 }}
+				end={{ x: 1, y: 1 }}
+			>
+				<ActivityIndicator size="large" color="#fff" />
+				<Text style={styles.loadingText}>Loading...</Text>
+			</LinearGradient>
 		);
 	}
 
 	if (!permission.granted) {
 		// Camera permissions are not granted yet
 		return (
-			<ThemedView style={styles.container}>
-				<ThemedText type="title" style={styles.title}>
-					📷 Camera Access
-				</ThemedText>
-				<ThemedText style={styles.message}>
-					We need your permission to use the camera to scan plants
-				</ThemedText>
-				<TouchableOpacity style={styles.button} onPress={requestPermission}>
-					<Text style={styles.buttonText}>Grant Camera Permission</Text>
-				</TouchableOpacity>
-			</ThemedView>
+			<LinearGradient
+				colors={["#10b981", "#059669"]}
+				style={styles.container}
+				start={{ x: 0, y: 0 }}
+				end={{ x: 1, y: 1 }}
+			>
+				<View style={styles.permissionCard}>
+					<Text style={styles.permissionIcon}>📷</Text>
+					<Text style={styles.permissionTitle}>Camera Access Required</Text>
+					<Text style={styles.permissionMessage}>
+						We need your permission to use the camera to scan and identify
+						plants
+					</Text>
+					<TouchableOpacity
+						style={styles.permissionButton}
+						onPress={requestPermission}
+					>
+						<Text style={styles.permissionButtonText}>Grant Permission</Text>
+					</TouchableOpacity>
+				</View>
+			</LinearGradient>
 		);
 	}
 
@@ -232,100 +247,139 @@ export default function ScanScreen() {
 
 	if (quizPending) {
 		return (
-			<ThemedView style={styles.container}>
-				<ThemedText type="title" style={styles.title}>
-					🌿 Plant Scanner
-				</ThemedText>
+			<LinearGradient
+				colors={["#10b981", "#059669"]}
+				style={styles.container}
+				start={{ x: 0, y: 0 }}
+				end={{ x: 1, y: 1 }}
+			>
+				<Text style={styles.headerTitle}>🌿 Plant Scanner</Text>
 
 				<View style={styles.blockedContainer}>
 					<Text style={styles.blockedIcon}>🔒</Text>
-					<ThemedText style={styles.blockedTitle}>
-						Scanning Temporarily Locked
-					</ThemedText>
-					<ThemedText style={styles.blockedMessage}>
+					<Text style={styles.blockedTitle}>Scanning Temporarily Locked</Text>
+					<Text style={styles.blockedMessage}>
 						You've scanned {batchProgress.current}{" "}
 						{batchProgress.current === 1 ? "plant" : "plants"}!{"\n\n"}
 						Complete the quiz to unlock more scanning.
-					</ThemedText>
+					</Text>
 					<View style={styles.blockedHint}>
-						<ThemedText style={styles.blockedHintText}>
+						<Text style={styles.blockedHintText}>
 							💡 Head to the Quiz tab to continue
-						</ThemedText>
+						</Text>
 					</View>
 				</View>
-			</ThemedView>
+			</LinearGradient>
 		);
 	}
 
 	return (
-		<ThemedView style={styles.container}>
-			<ThemedText type="title" style={styles.title}>
-				🌿 Plant Scanner
-			</ThemedText>
-			<ThemedText style={styles.subtitle}>
-				Take a picture of a plant to identify it
-			</ThemedText>
+		<LinearGradient
+			colors={["#10b981", "#059669"]}
+			style={styles.container}
+			start={{ x: 0, y: 0 }}
+			end={{ x: 1, y: 1 }}
+		>
+			<ScrollView
+				contentContainerStyle={styles.scrollContent}
+				showsVerticalScrollIndicator={false}
+			>
+				<Text style={styles.headerTitle}>🌿 Plant Scanner</Text>
+				<Text style={styles.headerSubtitle}>
+					Take a picture of a plant to identify it
+				</Text>
 
-			{photo ? (
-				<View style={styles.previewContainer}>
-					<ThemedText style={styles.previewTitle}>📸 Photo Preview</ThemedText>
-					<View style={styles.imageContainer}>
-						{photo && (
-							<Image
-								source={{ uri: photo }}
-								style={styles.preview}
-								resizeMode="cover"
-								onError={(error) => {
-									console.error("Image load error:", error.nativeEvent);
-									Alert.alert(
-										"Error",
-										`Failed to load image: ${JSON.stringify(error.nativeEvent)}`
-									);
-								}}
-								onLoad={() => console.log("✅ Image loaded successfully")}
-								onLoadStart={() => console.log("⏳ Image loading started...")}
-								onLoadEnd={() => console.log("🏁 Image loading ended")}
-							/>
-						)}
+				{photo ? (
+					<View style={styles.previewCard}>
+						<Text style={styles.previewTitle}>📸 Photo Preview</Text>
+						<View style={styles.imageContainer}>
+							{photo && (
+								<Image
+									source={{ uri: photo }}
+									style={styles.preview}
+									resizeMode="cover"
+									onError={(error) => {
+										console.error("Image load error:", error.nativeEvent);
+										Alert.alert(
+											"Error",
+											`Failed to load image: ${JSON.stringify(error.nativeEvent)}`
+										);
+									}}
+									onLoad={() => console.log("✅ Image loaded successfully")}
+									onLoadStart={() => console.log("⏳ Image loading started...")}
+									onLoadEnd={() => console.log("🏁 Image loading ended")}
+								/>
+							)}
+						</View>
+						<View style={styles.photoActions}>
+							<TouchableOpacity
+								style={styles.actionButton}
+								onPress={retakePicture}
+							>
+								<Text style={styles.actionButtonIcon}>📸</Text>
+								<Text style={styles.actionButtonText}>Retake</Text>
+							</TouchableOpacity>
+							<TouchableOpacity
+								style={[styles.actionButton, styles.analyzeButton]}
+								onPress={analyzePlant}
+							>
+								<Text style={styles.actionButtonIcon}>🔍</Text>
+								<Text style={styles.actionButtonText}>Analyze</Text>
+							</TouchableOpacity>
+						</View>
 					</View>
-					<ThemedText style={styles.uriDebug}>URI: {photo}</ThemedText>
-					<View style={styles.photoActions}>
-						<TouchableOpacity style={styles.button} onPress={retakePicture}>
-							<Text style={styles.buttonText}>📸 Retake</Text>
-						</TouchableOpacity>
+				) : (
+					<View style={styles.actionCard}>
+						<View style={styles.cameraIconContainer}>
+							<Text style={styles.cameraIcon}>📷</Text>
+						</View>
+						<Text style={styles.actionCardTitle}>Ready to Scan</Text>
+						<Text style={styles.actionCardSubtitle}>
+							Capture a clear photo of the plant
+						</Text>
 						<TouchableOpacity
-							style={[styles.button, styles.analyzeButton]}
-							onPress={analyzePlant}
+							style={styles.openCameraButton}
+							onPress={openCamera}
 						>
-							<Text style={styles.buttonText}>🔍 Analyze</Text>
+							<Text style={styles.openCameraButtonText}>Open Camera</Text>
 						</TouchableOpacity>
 					</View>
-				</View>
-			) : (
-				<TouchableOpacity style={styles.openCameraButton} onPress={openCamera}>
-					<Text style={styles.openCameraText}>📷</Text>
-					<Text style={styles.buttonText}>Open Camera</Text>
-				</TouchableOpacity>
-			)}
-		</ThemedView>
+				)}
+			</ScrollView>
+		</LinearGradient>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+	},
+	scrollContent: {
 		padding: 20,
-		justifyContent: "center",
+		paddingTop: 60,
 		alignItems: "center",
+	},
+	loadingText: {
+		color: "#fff",
+		fontSize: 16,
+		marginTop: 12,
+	},
+	headerTitle: {
+		fontSize: 32,
+		fontWeight: "bold",
+		color: "#fff",
+		marginBottom: 8,
+		textAlign: "center",
+	},
+	headerSubtitle: {
+		fontSize: 16,
+		color: "rgba(255, 255, 255, 0.9)",
+		marginBottom: 30,
+		textAlign: "center",
 	},
 	cameraContainer: {
 		flex: 1,
 		justifyContent: "center",
-	},
-	message: {
-		textAlign: "center",
-		paddingBottom: 10,
-		fontSize: 16,
 	},
 	camera: {
 		flex: 1,
@@ -383,46 +437,83 @@ const styles = StyleSheet.create({
 		borderRadius: 30,
 		backgroundColor: "white",
 	},
-	title: {
-		marginBottom: 10,
-	},
-	subtitle: {
-		fontSize: 16,
-		textAlign: "center",
-		marginBottom: 30,
-		opacity: 0.7,
-	},
-	openCameraButton: {
-		backgroundColor: "#34C759",
-		padding: 30,
-		borderRadius: 20,
-		alignItems: "center",
-		minWidth: 200,
-	},
-	openCameraText: {
-		fontSize: 50,
-		marginBottom: 10,
-	},
-	previewContainer: {
+	actionCard: {
+		backgroundColor: "#ffffff",
+		borderRadius: 24,
+		padding: 40,
 		alignItems: "center",
 		width: "100%",
-		flex: 1,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.3,
+		shadowRadius: 20,
+		elevation: 15,
+	},
+	cameraIconContainer: {
+		width: 120,
+		height: 120,
+		borderRadius: 60,
+		backgroundColor: "#f0fdf4",
 		justifyContent: "center",
+		alignItems: "center",
+		marginBottom: 24,
+	},
+	cameraIcon: {
+		fontSize: 60,
+	},
+	actionCardTitle: {
+		fontSize: 24,
+		fontWeight: "bold",
+		color: "#1f2937",
+		marginBottom: 8,
+	},
+	actionCardSubtitle: {
+		fontSize: 15,
+		color: "#6b7280",
+		marginBottom: 30,
+		textAlign: "center",
+	},
+	openCameraButton: {
+		backgroundColor: "#10b981",
+		paddingVertical: 16,
+		paddingHorizontal: 48,
+		borderRadius: 14,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 8,
+		elevation: 5,
+	},
+	openCameraButtonText: {
+		color: "#fff",
+		fontSize: 17,
+		fontWeight: "600",
+	},
+	previewCard: {
+		backgroundColor: "#ffffff",
+		borderRadius: 24,
+		padding: 20,
+		alignItems: "center",
+		width: "100%",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.3,
+		shadowRadius: 20,
+		elevation: 15,
 	},
 	previewTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		marginBottom: 15,
+		fontSize: 20,
+		fontWeight: "bold",
+		color: "#1f2937",
+		marginBottom: 16,
 	},
 	imageContainer: {
 		width: "100%",
-		height: 450,
-		backgroundColor: "#f0f0f0",
-		borderRadius: 20,
+		height: 400,
+		backgroundColor: "#f3f4f6",
+		borderRadius: 16,
 		overflow: "hidden",
 		marginBottom: 20,
-		borderWidth: 2,
-		borderColor: "#34C759",
 	},
 	preview: {
 		width: "100%",
@@ -430,55 +521,118 @@ const styles = StyleSheet.create({
 	},
 	photoActions: {
 		flexDirection: "row",
-		gap: 15,
+		gap: 12,
+		width: "100%",
+	},
+	actionButton: {
+		flex: 1,
+		backgroundColor: "#f3f4f6",
+		paddingVertical: 16,
+		borderRadius: 12,
+		alignItems: "center",
+		flexDirection: "row",
+		justifyContent: "center",
+		gap: 8,
+	},
+	actionButtonIcon: {
+		fontSize: 20,
+	},
+	actionButtonText: {
+		color: "#1f2937",
+		fontSize: 16,
+		fontWeight: "600",
 	},
 	analyzeButton: {
-		backgroundColor: "#5856D6",
+		backgroundColor: "#10b981",
 	},
-	uriDebug: {
-		fontSize: 10,
-		marginBottom: 10,
-		opacity: 0.5,
-		textAlign: "center",
-	},
-	blockedContainer: {
+	permissionCard: {
+		backgroundColor: "#ffffff",
+		borderRadius: 24,
+		padding: 40,
 		alignItems: "center",
-		padding: 30,
-		borderRadius: 20,
-		backgroundColor: "rgba(255, 149, 0, 0.1)",
-		borderWidth: 2,
-		borderColor: "#FF9500",
-		width: "100%",
-		maxWidth: 400,
-		marginTop: 20,
+		marginHorizontal: 20,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.3,
+		shadowRadius: 20,
+		elevation: 15,
 	},
-	blockedIcon: {
+	permissionIcon: {
 		fontSize: 60,
 		marginBottom: 20,
 	},
-	blockedTitle: {
-		fontSize: 22,
+	permissionTitle: {
+		fontSize: 24,
 		fontWeight: "bold",
-		marginBottom: 15,
+		color: "#1f2937",
+		marginBottom: 12,
+		textAlign: "center",
+	},
+	permissionMessage: {
+		fontSize: 15,
+		color: "#6b7280",
+		textAlign: "center",
+		marginBottom: 30,
+		lineHeight: 22,
+	},
+	permissionButton: {
+		backgroundColor: "#10b981",
+		paddingVertical: 16,
+		paddingHorizontal: 32,
+		borderRadius: 12,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 8,
+		elevation: 5,
+	},
+	permissionButtonText: {
+		color: "#fff",
+		fontSize: 16,
+		fontWeight: "600",
+	},
+	blockedContainer: {
+		alignItems: "center",
+		padding: 32,
+		borderRadius: 24,
+		backgroundColor: "#ffffff",
+		width: "100%",
+		marginHorizontal: 20,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.3,
+		shadowRadius: 20,
+		elevation: 15,
+	},
+	blockedIcon: {
+		fontSize: 64,
+		marginBottom: 20,
+	},
+	blockedTitle: {
+		fontSize: 24,
+		fontWeight: "bold",
+		color: "#1f2937",
+		marginBottom: 16,
 		textAlign: "center",
 	},
 	blockedMessage: {
 		fontSize: 16,
+		color: "#6b7280",
 		textAlign: "center",
-		opacity: 0.8,
 		lineHeight: 24,
 	},
 	blockedHint: {
-		marginTop: 20,
-		padding: 15,
-		backgroundColor: "rgba(52, 199, 89, 0.1)",
-		borderRadius: 10,
-		borderWidth: 1,
-		borderColor: "#34C759",
+		marginTop: 24,
+		paddingVertical: 16,
+		paddingHorizontal: 20,
+		backgroundColor: "#f0fdf4",
+		borderRadius: 12,
+		borderWidth: 2,
+		borderColor: "#10b981",
 	},
 	blockedHintText: {
-		fontSize: 14,
-		color: "#34C759",
+		fontSize: 15,
+		color: "#059669",
 		fontWeight: "600",
 		textAlign: "center",
 	},

@@ -1,6 +1,4 @@
 import { PlantResult } from "@/components/plant-result";
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
 import { identifyPlantSimple, type PlantIdResponse } from "@/services/plantId";
 import {
 	getQuizBatchProgress,
@@ -9,10 +7,12 @@ import {
 } from "@/services/scanTracker";
 import { useUser } from "@clerk/clerk-expo";
 import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import {
 	Alert,
 	Image,
+	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -149,127 +149,193 @@ export default function UploadScreen() {
 
 	if (quizPending) {
 		return (
-			<ThemedView style={styles.container}>
-				<ThemedText type="title" style={styles.title}>
-					📤 Upload Photo
-				</ThemedText>
+			<LinearGradient
+				colors={["#3b82f6", "#2563eb"]}
+				style={styles.container}
+				start={{ x: 0, y: 0 }}
+				end={{ x: 1, y: 1 }}
+			>
+				<Text style={styles.headerTitle}>📤 Upload Photo</Text>
 
 				<View style={styles.blockedContainer}>
 					<Text style={styles.blockedIcon}>🔒</Text>
-					<ThemedText style={styles.blockedTitle}>
-						Upload Temporarily Locked
-					</ThemedText>
-					<ThemedText style={styles.blockedMessage}>
+					<Text style={styles.blockedTitle}>Upload Temporarily Locked</Text>
+					<Text style={styles.blockedMessage}>
 						You've scanned {batchProgress.current}{" "}
 						{batchProgress.current === 1 ? "plant" : "plants"}!{"\n\n"}
 						Complete the quiz to unlock more scanning.
-					</ThemedText>
+					</Text>
 					<View style={styles.blockedHint}>
-						<ThemedText style={styles.blockedHintText}>
+						<Text style={styles.blockedHintText}>
 							💡 Head to the Quiz tab to continue
-						</ThemedText>
+						</Text>
 					</View>
 				</View>
-			</ThemedView>
+			</LinearGradient>
 		);
 	}
 
 	return (
-		<ThemedView style={styles.container}>
-			<ThemedText type="title" style={styles.title}>
-				📤 Upload Photo
-			</ThemedText>
-			<ThemedText style={styles.subtitle}>
-				Select a plant photo from your gallery to identify it
-			</ThemedText>
+		<LinearGradient
+			colors={["#3b82f6", "#2563eb"]}
+			style={styles.container}
+			start={{ x: 0, y: 0 }}
+			end={{ x: 1, y: 1 }}
+		>
+			<ScrollView
+				contentContainerStyle={styles.scrollContent}
+				showsVerticalScrollIndicator={false}
+			>
+				<Text style={styles.headerTitle}>📤 Upload Photo</Text>
+				<Text style={styles.headerSubtitle}>
+					Select a plant photo from your gallery to identify it
+				</Text>
 
-			{photo ? (
-				<View style={styles.previewContainer}>
-					<ThemedText style={styles.previewTitle}>📸 Selected Photo</ThemedText>
-					<View style={styles.imageContainer}>
-						<Image
-							source={{ uri: photo }}
-							style={styles.preview}
-							resizeMode="cover"
-						/>
+				{photo ? (
+					<View style={styles.previewCard}>
+						<Text style={styles.previewTitle}>📸 Selected Photo</Text>
+						<View style={styles.imageContainer}>
+							<Image
+								source={{ uri: photo }}
+								style={styles.preview}
+								resizeMode="cover"
+							/>
+						</View>
+						<View style={styles.photoActions}>
+							<TouchableOpacity
+								style={styles.actionButton}
+								onPress={selectNewImage}
+							>
+								<Text style={styles.actionButtonIcon}>🖼️</Text>
+								<Text style={styles.actionButtonText}>Choose Another</Text>
+							</TouchableOpacity>
+							<TouchableOpacity
+								style={[styles.actionButton, styles.analyzeButton]}
+								onPress={analyzePlant}
+							>
+								<Text style={styles.actionButtonIcon}>🔍</Text>
+								<Text style={styles.actionButtonText}>Analyze</Text>
+							</TouchableOpacity>
+						</View>
 					</View>
-					<View style={styles.photoActions}>
-						<TouchableOpacity style={styles.button} onPress={selectNewImage}>
-							<Text style={styles.buttonText}>🖼️ Choose Another</Text>
-						</TouchableOpacity>
-						<TouchableOpacity
-							style={[styles.button, styles.analyzeButton]}
-							onPress={analyzePlant}
-						>
-							<Text style={styles.buttonText}>🔍 Analyze</Text>
+				) : (
+					<View style={styles.actionCard}>
+						<View style={styles.uploadIconContainer}>
+							<Text style={styles.uploadIcon}>🖼️</Text>
+						</View>
+						<Text style={styles.actionCardTitle}>Upload from Gallery</Text>
+						<Text style={styles.actionCardSubtitle}>
+							Select a clear photo of a plant
+						</Text>
+						<TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+							<Text style={styles.uploadButtonText}>Choose from Gallery</Text>
 						</TouchableOpacity>
 					</View>
-				</View>
-			) : (
-				<TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-					<Text style={styles.uploadIcon}>🖼️</Text>
-					<Text style={styles.buttonText}>Choose from Gallery</Text>
-					<ThemedText style={styles.uploadHint}>
-						Select a clear photo of a plant
-					</ThemedText>
-				</TouchableOpacity>
-			)}
-		</ThemedView>
+				)}
+			</ScrollView>
+		</LinearGradient>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+	},
+	scrollContent: {
 		padding: 20,
-		justifyContent: "center",
+		paddingTop: 60,
 		alignItems: "center",
 	},
-	title: {
-		marginBottom: 10,
-	},
-	subtitle: {
-		fontSize: 16,
+	headerTitle: {
+		fontSize: 32,
+		fontWeight: "bold",
+		color: "#fff",
+		marginBottom: 8,
 		textAlign: "center",
+	},
+	headerSubtitle: {
+		fontSize: 16,
+		color: "rgba(255, 255, 255, 0.9)",
 		marginBottom: 30,
-		opacity: 0.7,
+		textAlign: "center",
 	},
-	uploadButton: {
-		backgroundColor: "#5856D6",
-		padding: 30,
-		borderRadius: 20,
-		alignItems: "center",
-		minWidth: 250,
-	},
-	uploadIcon: {
-		fontSize: 50,
-		marginBottom: 10,
-	},
-	uploadHint: {
-		fontSize: 12,
-		marginTop: 10,
-		opacity: 0.7,
-	},
-	previewContainer: {
+	actionCard: {
+		backgroundColor: "#ffffff",
+		borderRadius: 24,
+		padding: 40,
 		alignItems: "center",
 		width: "100%",
-		flex: 1,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.3,
+		shadowRadius: 20,
+		elevation: 15,
+	},
+	uploadIconContainer: {
+		width: 120,
+		height: 120,
+		borderRadius: 60,
+		backgroundColor: "#eff6ff",
 		justifyContent: "center",
+		alignItems: "center",
+		marginBottom: 24,
+	},
+	uploadIcon: {
+		fontSize: 60,
+	},
+	actionCardTitle: {
+		fontSize: 24,
+		fontWeight: "bold",
+		color: "#1f2937",
+		marginBottom: 8,
+	},
+	actionCardSubtitle: {
+		fontSize: 15,
+		color: "#6b7280",
+		marginBottom: 30,
+		textAlign: "center",
+	},
+	uploadButton: {
+		backgroundColor: "#3b82f6",
+		paddingVertical: 16,
+		paddingHorizontal: 48,
+		borderRadius: 14,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 8,
+		elevation: 5,
+	},
+	uploadButtonText: {
+		color: "#fff",
+		fontSize: 17,
+		fontWeight: "600",
+	},
+	previewCard: {
+		backgroundColor: "#ffffff",
+		borderRadius: 24,
+		padding: 20,
+		alignItems: "center",
+		width: "100%",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.3,
+		shadowRadius: 20,
+		elevation: 15,
 	},
 	previewTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		marginBottom: 15,
+		fontSize: 20,
+		fontWeight: "bold",
+		color: "#1f2937",
+		marginBottom: 16,
 	},
 	imageContainer: {
 		width: "100%",
-		height: 450,
-		backgroundColor: "#f0f0f0",
-		borderRadius: 20,
+		height: 400,
+		backgroundColor: "#f3f4f6",
+		borderRadius: 16,
 		overflow: "hidden",
 		marginBottom: 20,
-		borderWidth: 2,
-		borderColor: "#5856D6",
 	},
 	preview: {
 		width: "100%",
@@ -277,61 +343,72 @@ const styles = StyleSheet.create({
 	},
 	photoActions: {
 		flexDirection: "row",
-		gap: 15,
+		gap: 12,
+		width: "100%",
 	},
-	button: {
-		backgroundColor: "#007AFF",
-		padding: 15,
-		borderRadius: 10,
+	actionButton: {
+		flex: 1,
+		backgroundColor: "#f3f4f6",
+		paddingVertical: 16,
+		borderRadius: 12,
 		alignItems: "center",
-		minWidth: 140,
+		flexDirection: "row",
+		justifyContent: "center",
+		gap: 8,
 	},
-	buttonText: {
-		color: "white",
+	actionButtonIcon: {
+		fontSize: 20,
+	},
+	actionButtonText: {
+		color: "#1f2937",
 		fontSize: 16,
 		fontWeight: "600",
 	},
 	analyzeButton: {
-		backgroundColor: "#5856D6",
+		backgroundColor: "#3b82f6",
 	},
 	blockedContainer: {
 		alignItems: "center",
-		padding: 30,
-		borderRadius: 20,
-		backgroundColor: "rgba(255, 149, 0, 0.1)",
-		borderWidth: 2,
-		borderColor: "#FF9500",
+		padding: 32,
+		borderRadius: 24,
+		backgroundColor: "#ffffff",
 		width: "100%",
-		maxWidth: 400,
-		marginTop: 20,
+		marginHorizontal: 20,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.3,
+		shadowRadius: 20,
+		elevation: 15,
 	},
 	blockedIcon: {
-		fontSize: 60,
+		fontSize: 64,
 		marginBottom: 20,
 	},
 	blockedTitle: {
-		fontSize: 22,
+		fontSize: 24,
 		fontWeight: "bold",
-		marginBottom: 15,
+		color: "#1f2937",
+		marginBottom: 16,
 		textAlign: "center",
 	},
 	blockedMessage: {
 		fontSize: 16,
+		color: "#6b7280",
 		textAlign: "center",
-		opacity: 0.8,
 		lineHeight: 24,
 	},
 	blockedHint: {
-		marginTop: 20,
-		padding: 15,
-		backgroundColor: "rgba(52, 199, 89, 0.1)",
-		borderRadius: 10,
-		borderWidth: 1,
-		borderColor: "#34C759",
+		marginTop: 24,
+		paddingVertical: 16,
+		paddingHorizontal: 20,
+		backgroundColor: "#eff6ff",
+		borderRadius: 12,
+		borderWidth: 2,
+		borderColor: "#3b82f6",
 	},
 	blockedHintText: {
-		fontSize: 14,
-		color: "#34C759",
+		fontSize: 15,
+		color: "#2563eb",
 		fontWeight: "600",
 		textAlign: "center",
 	},
