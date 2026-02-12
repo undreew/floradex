@@ -157,7 +157,7 @@ export function getCurrentQuizBatch(user: any): ScannedPlant[] {
 }
 
 /**
- * Get the progress of the current quiz batch (e.g., "1/1")
+ * Get the progress of the current quiz batch (e.g., "5/5")
  */
 export function getQuizBatchProgress(user: any): {
 	current: number;
@@ -166,7 +166,7 @@ export function getQuizBatchProgress(user: any): {
 	const batch = getCurrentQuizBatch(user);
 	return {
 		current: batch.length,
-		total: 1,
+		total: 5,
 	};
 }
 
