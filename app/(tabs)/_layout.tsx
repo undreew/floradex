@@ -2,10 +2,10 @@ import { Tabs } from "expo-router";
 import React from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAuth } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
 import { Redirect } from "expo-router";
 
 export default function TabLayout() {
@@ -35,7 +35,7 @@ export default function TabLayout() {
 				options={{
 					title: "Dashboard",
 					tabBarIcon: ({ color }) => (
-						<IconSymbol size={28} name="house.fill" color={color} />
+						<Ionicons name="home" size={24} color={color} />
 					),
 				}}
 			/>
@@ -44,7 +44,7 @@ export default function TabLayout() {
 				options={{
 					title: "Scan Plants",
 					tabBarIcon: ({ color }) => (
-						<IconSymbol size={28} name="paperplane.fill" color={color} />
+						<Ionicons name="camera" size={24} color={color} />
 					),
 				}}
 			/>
@@ -53,7 +53,7 @@ export default function TabLayout() {
 				options={{
 					title: "Plant Quiz",
 					tabBarIcon: ({ color }) => (
-						<IconSymbol size={28} name="chevron.right" color={color} />
+						<Ionicons name="help-circle" size={24} color={color} />
 					),
 				}}
 			/>
@@ -62,7 +62,7 @@ export default function TabLayout() {
 				options={{
 					title: "Upload Plant",
 					tabBarIcon: ({ color }) => (
-						<IconSymbol size={28} name="chevron.left" color={color} />
+						<Ionicons name="cloud-upload" size={24} color={color} />
 					),
 				}}
 			/>
