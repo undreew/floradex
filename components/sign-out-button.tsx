@@ -1,3 +1,4 @@
+import { userProfileService } from "@/services/userProfile";
 import { useClerk } from "@clerk/clerk-expo";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
@@ -11,6 +12,8 @@ export const SignOutButton = () => {
 
 		try {
 			setIsSigningOut(true);
+			// Clear user profile data
+			await userProfileService.clearProfile();
 			// Just call signOut - the auth state change will trigger the redirect in TabLayout
 			await signOut();
 		} catch (err) {

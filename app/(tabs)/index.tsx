@@ -1,11 +1,27 @@
 import { SignOutButton } from "@/components/sign-out-button";
+import { userProfileService } from "@/services/userProfile";
 import { useAuth } from "@clerk/clerk-expo";
+import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { useCallback, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function HomeScreen() {
 	const { isLoaded, userId } = useAuth();
+	const [username, setUsername] = useState<string | null>(null);
+
+	// Load username when component mounts or comes back into focus
+	useFocusEffect(
+		useCallback(() => {
+			loadUsername();
+		}, [])
+	);
+
+	const loadUsername = async () => {
+		const saved = await userProfileService.getUsername();
+		setUsername(saved);
+	};
 
 	if (!isLoaded) {
 		return null;
@@ -22,7 +38,9 @@ export default function HomeScreen() {
 			>
 				<View style={styles.headerContent}>
 					<View>
-						<Text style={styles.greeting}>Welcome Back! 👋</Text>
+						<Text style={styles.greeting}>
+							Welcome Back{username ? `, ${username}` : ""}! 👋
+						</Text>
 						<Text style={styles.subtitle}>Your Plant Collection</Text>
 					</View>
 					<View style={styles.logoCircle}>
