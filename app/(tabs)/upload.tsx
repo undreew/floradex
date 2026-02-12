@@ -69,20 +69,42 @@ export default function UploadScreen() {
 		setAnalysisResult(null);
 
 		try {
-			console.log("Starting plant analysis from gallery image...");
+			console.log("[Upload] Starting plant analysis...");
 			const result = await identifyPlantSimple(photo);
-			console.log("Analysis complete:", result);
+
+			console.log("[Upload] ========== FULL API RESPONSE ==========");
+			console.log(JSON.stringify(result, null, 2));
+			console.log("[Upload] ========================================");
+
 			setAnalysisResult(result);
 
 			// Track successful scan if a plant was identified
 			if (result?.result?.is_plant?.binary) {
 				const topSuggestion = result.result.classification.suggestions[0];
-				await trackSuccessfulScan(user, {
+
+				console.log("[Upload] Top suggestion:", topSuggestion?.name);
+				console.log(
+					"[Upload] Common names:",
+					topSuggestion?.details?.common_names
+				);
+				console.log("[Upload] Taxonomy:", topSuggestion?.details?.taxonomy);
+				console.log("[Upload] Has details?", !!topSuggestion?.details);
+				console.log(
+					"[Upload] Details keys:",
+					topSuggestion?.details ? Object.keys(topSuggestion.details) : "none"
+				);
+
+				const plantData = {
 					name: topSuggestion?.name || "Unknown Plant",
 					commonNames: topSuggestion?.details?.common_names,
 					probability: topSuggestion?.probability || 0,
 					imageUrl: topSuggestion?.similar_images?.[0]?.url,
-				});
+					userPhotoUri: photo, // Save the actual photo the user took
+					taxonomy: topSuggestion?.details?.taxonomy,
+				};
+
+				console.log("[Upload] Data being saved:", plantData);
+				await trackSuccessfulScan(user, plantData);
 			}
 		} catch (error) {
 			console.error("Analysis error:", error);
@@ -138,8 +160,8 @@ export default function UploadScreen() {
 						Upload Temporarily Locked
 					</ThemedText>
 					<ThemedText style={styles.blockedMessage}>
-						You've scanned {batchProgress.current} plants!
-						{"\n\n"}
+						You've scanned {batchProgress.current}{" "}
+						{batchProgress.current === 1 ? "plant" : "plants"}!{"\n\n"}
 						Complete the quiz to unlock more scanning.
 					</ThemedText>
 					<View style={styles.blockedHint}>

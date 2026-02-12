@@ -13,6 +13,7 @@ import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	Alert,
+	Image,
 	ScrollView,
 	StyleSheet,
 	Text,
@@ -36,13 +37,32 @@ const Quiz = () => {
 
 	// Generate quiz questions when batch is ready
 	useEffect(() => {
+		console.log("[Quiz] useEffect triggered:", {
+			quizPending,
+			batchLength: currentBatch.length,
+			currentQuestionsLength: quizQuestions.length,
+		});
+
 		if (quizPending && currentBatch.length > 0 && quizQuestions.length === 0) {
+			console.log("[Quiz] Generating quiz questions...");
 			const questions = generateQuizQuestions(currentBatch);
+			console.log(`[Quiz] Generated ${questions.length} questions`);
 			setQuizQuestions(questions);
+
+			if (questions.length === 0) {
+				console.warn("[Quiz] No questions generated! Check plant data.");
+			}
 		}
-	}, [quizPending, currentBatch]);
+	}, [quizPending, currentBatch.length, quizQuestions.length]);
 
 	const handleStartQuiz = () => {
+		if (quizQuestions.length === 0) {
+			Alert.alert(
+				"No Questions Available",
+				"Unable to generate quiz questions from your scanned plants. Please try scanning plants again with better lighting and focus."
+			);
+			return;
+		}
 		setQuizStarted(true);
 		setCurrentQuestionIndex(0);
 		setScore(0);
@@ -204,12 +224,19 @@ const Quiz = () => {
 
 						<View style={styles.questionContainer}>
 							<ThemedText style={styles.questionText}>
-								What is the name of this plant?
+								{currentQuestion.questionText}
 							</ThemedText>
 
 							<View style={styles.plantInfoCard}>
+								{currentQuestion.plant.userPhotoUri && (
+									<Image
+										source={{ uri: currentQuestion.plant.userPhotoUri }}
+										style={styles.plantImage}
+										resizeMode="cover"
+									/>
+								)}
 								<ThemedText style={styles.plantScientificName}>
-									{currentQuestion.plant.name}
+									{currentQuestion.displayName}
 								</ThemedText>
 								{currentQuestion.plant.probability && (
 									<ThemedText style={styles.plantConfidence}>
@@ -298,8 +325,9 @@ const Quiz = () => {
 							Test Your Plant Knowledge
 						</ThemedText>
 						<ThemedText style={styles.quizPendingSubtext}>
-							You've scanned {batchProgress.current} plants. Take this quiz to
-							unlock more scanning!
+							You've scanned {batchProgress.current}{" "}
+							{batchProgress.current === 1 ? "plant" : "plants"}. Take this quiz
+							to unlock more scanning!
 						</ThemedText>
 					</View>
 
@@ -309,32 +337,83 @@ const Quiz = () => {
 						</ThemedText>
 						{currentBatch.map((plant, index) => (
 							<View key={plant.id} style={styles.plantCard}>
-								<View style={styles.plantHeader}>
-									<Text style={styles.plantNumber}>#{index + 1}</Text>
-									<Text style={styles.plantProbability}>
-										{(plant.probability * 100).toFixed(1)}%
-									</Text>
-								</View>
-								<ThemedText style={styles.plantName}>{plant.name}</ThemedText>
-								{plant.commonNames && plant.commonNames.length > 0 && (
-									<ThemedText style={styles.plantCommonName}>
-										({plant.commonNames[0]})
-									</ThemedText>
+								{plant.userPhotoUri && (
+									<Image
+										source={{ uri: plant.userPhotoUri }}
+										style={styles.plantThumbnail}
+										resizeMode="cover"
+									/>
 								)}
-								<ThemedText style={styles.plantDate}>
-									Scanned: {new Date(plant.scannedAt).toLocaleDateString()}
-								</ThemedText>
+								<View style={styles.plantCardContent}>
+									<View style={styles.plantHeader}>
+										<Text style={styles.plantNumber}>#{index + 1}</Text>
+										<Text style={styles.plantProbability}>
+											{(plant.probability * 100).toFixed(1)}%
+										</Text>
+									</View>
+									<ThemedText style={styles.plantName}>{plant.name}</ThemedText>
+									{plant.commonNames && plant.commonNames.length > 0 && (
+										<ThemedText style={styles.plantCommonName}>
+											({plant.commonNames[0]})
+										</ThemedText>
+									)}
+									<ThemedText style={styles.plantDate}>
+										Scanned: {new Date(plant.scannedAt).toLocaleDateString()}
+									</ThemedText>
+									{plant.taxonomy && (
+										<View style={styles.taxonomyInfo}>
+											{plant.taxonomy.genus && (
+												<ThemedText style={styles.taxonomyText}>
+													Genus: {plant.taxonomy.genus}
+												</ThemedText>
+											)}
+											{plant.taxonomy.family && (
+												<ThemedText style={styles.taxonomyText}>
+													Family: {plant.taxonomy.family}
+												</ThemedText>
+											)}
+										</View>
+									)}
+									<TouchableOpacity
+										style={styles.debugButton}
+										onPress={() => {
+											Alert.alert(
+												"Plant Data",
+												`Name: ${plant.name}\n` +
+													`Common Names: ${plant.commonNames?.join(", ") || "None"}\n` +
+													`Genus: ${plant.taxonomy?.genus || "None"}\n` +
+													`Family: ${plant.taxonomy?.family || "None"}\n` +
+													`Kingdom: ${plant.taxonomy?.kingdom || "None"}\n` +
+													`Probability: ${(plant.probability * 100).toFixed(1)}%`
+											);
+										}}
+									>
+										<ThemedText style={styles.debugButtonText}>
+											🔍 View Plant Data
+										</ThemedText>
+									</TouchableOpacity>
+								</View>
 							</View>
 						))}
 					</View>
 
 					<TouchableOpacity
-						style={styles.startQuizButton}
+						style={[
+							styles.startQuizButton,
+							quizQuestions.length === 0 && styles.startQuizButtonDisabled,
+						]}
 						onPress={handleStartQuiz}
+						disabled={quizQuestions.length === 0}
 					>
-						<Text style={styles.startQuizButtonText}>🚀 Start Quiz</Text>
+						<Text style={styles.startQuizButtonText}>
+							{quizQuestions.length === 0
+								? "⚠️ No Questions Available"
+								: "🚀 Start Quiz"}
+						</Text>
 						<Text style={styles.startQuizButtonSubtext}>
-							{quizQuestions.length} questions • Passing grade: 60%
+							{quizQuestions.length > 0
+								? `${quizQuestions.length} questions • Passing grade: 60%`
+								: "Plants need more data for quiz generation"}
 						</Text>
 					</TouchableOpacity>
 				</ScrollView>
@@ -356,14 +435,12 @@ const Quiz = () => {
 				</View>
 				<ThemedText style={styles.cycleSubtext}>
 					{batchProgress.current === 0
-						? "Scan 5 plants to unlock a new quiz!"
-						: batchProgress.current === 1
-							? "Great start! Scan 4 more plants."
-							: `${batchProgress.total - batchProgress.current} more ${
-									batchProgress.total - batchProgress.current === 1
-										? "scan"
-										: "scans"
-								} until quiz unlocks!`}
+						? "Scan 1 plant to unlock a new quiz!"
+						: `${batchProgress.total - batchProgress.current} more ${
+								batchProgress.total - batchProgress.current === 1
+									? "scan"
+									: "scans"
+							} until quiz unlocks!`}
 				</ThemedText>
 			</View>
 		</ThemedView>
@@ -466,11 +543,18 @@ const styles = StyleSheet.create({
 	},
 	plantCard: {
 		backgroundColor: "rgba(52, 199, 89, 0.1)",
-		padding: 15,
 		borderRadius: 12,
 		marginBottom: 10,
 		borderWidth: 1,
 		borderColor: "#34C759",
+		overflow: "hidden",
+	},
+	plantThumbnail: {
+		width: "100%",
+		height: 160,
+	},
+	plantCardContent: {
+		padding: 15,
 	},
 	plantHeader: {
 		flexDirection: "row",
@@ -502,6 +586,32 @@ const styles = StyleSheet.create({
 		fontSize: 12,
 		opacity: 0.6,
 	},
+	taxonomyInfo: {
+		marginTop: 8,
+		paddingTop: 8,
+		borderTopWidth: 1,
+		borderTopColor: "rgba(52, 199, 89, 0.3)",
+	},
+	taxonomyText: {
+		fontSize: 11,
+		opacity: 0.6,
+		marginBottom: 2,
+	},
+	debugButton: {
+		marginTop: 10,
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		backgroundColor: "rgba(88, 86, 214, 0.1)",
+		borderRadius: 6,
+		borderWidth: 1,
+		borderColor: "#5856D6",
+		alignItems: "center",
+	},
+	debugButtonText: {
+		fontSize: 12,
+		color: "#5856D6",
+		fontWeight: "600",
+	},
 	startQuizButton: {
 		backgroundColor: "#5856D6",
 		padding: 20,
@@ -510,6 +620,10 @@ const styles = StyleSheet.create({
 		width: "100%",
 		maxWidth: 400,
 		marginTop: 10,
+	},
+	startQuizButtonDisabled: {
+		backgroundColor: "#999",
+		opacity: 0.5,
 	},
 	startQuizButtonText: {
 		color: "white",
@@ -559,6 +673,13 @@ const styles = StyleSheet.create({
 		borderWidth: 2,
 		borderColor: "#5856D6",
 		alignItems: "center",
+		overflow: "hidden",
+	},
+	plantImage: {
+		width: "100%",
+		height: 250,
+		borderRadius: 12,
+		marginBottom: 15,
 	},
 	plantScientificName: {
 		fontSize: 16,

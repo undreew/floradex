@@ -7,6 +7,7 @@ import {
 	Linking,
 	ScrollView,
 	StyleSheet,
+	Text,
 	TouchableOpacity,
 	View,
 } from "react-native";
@@ -78,6 +79,19 @@ export function PlantResult({
 						<ThemedText style={styles.confidenceText}>
 							Confidence: {(plantProbability * 100).toFixed(1)}%
 						</ThemedText>
+
+						{/* Raw API Response Debug */}
+						<View style={styles.debugContainer}>
+							<ThemedText style={styles.debugTitle}>
+								🔍 Full API Response
+							</ThemedText>
+							<ScrollView horizontal style={styles.debugScrollView}>
+								<Text style={styles.debugText}>
+									{JSON.stringify(result, null, 2)}
+								</Text>
+							</ScrollView>
+						</View>
+
 						<TouchableOpacity style={styles.retryButton} onPress={onClose}>
 							<ThemedText style={styles.buttonText}>Try Again</ThemedText>
 						</TouchableOpacity>
@@ -245,6 +259,18 @@ export function PlantResult({
 								)}
 						</View>
 					)}
+
+					{/* Raw API Response Debug */}
+					<View style={styles.debugContainer}>
+						<ThemedText style={styles.debugTitle}>
+							🔍 Full API Response
+						</ThemedText>
+						<ScrollView horizontal style={styles.debugScrollView}>
+							<Text style={styles.debugText}>
+								{JSON.stringify(result, null, 2)}
+							</Text>
+						</ScrollView>
+					</View>
 
 					<TouchableOpacity style={styles.closeButton} onPress={onClose}>
 						<ThemedText style={styles.buttonText}>Close</ThemedText>
@@ -458,6 +484,27 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		opacity: 0.7,
 		marginTop: 5,
+	},
+	debugContainer: {
+		backgroundColor: "rgba(0, 0, 0, 0.05)",
+		borderRadius: 10,
+		padding: 15,
+		marginBottom: 20,
+		borderWidth: 1,
+		borderColor: "rgba(0, 0, 0, 0.1)",
+	},
+	debugTitle: {
+		fontSize: 16,
+		fontWeight: "bold",
+		marginBottom: 10,
+	},
+	debugScrollView: {
+		maxHeight: 300,
+	},
+	debugText: {
+		fontFamily: "monospace",
+		fontSize: 11,
+		lineHeight: 16,
 	},
 	closeButton: {
 		backgroundColor: "#007AFF",
