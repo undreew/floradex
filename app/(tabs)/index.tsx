@@ -1,8 +1,8 @@
+import { SignOutButton } from "@/components/sign-out-button";
+import { useAuth } from "@clerk/clerk-expo";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SignOutButton } from "@/components/sign-out-button";
-import { useAuth } from "@clerk/clerk-expo";
 
 export default function HomeScreen() {
 	const { isLoaded, userId } = useAuth();
@@ -31,7 +31,10 @@ export default function HomeScreen() {
 				</View>
 			</LinearGradient>
 
-			<ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+			<ScrollView
+				style={styles.scrollView}
+				showsVerticalScrollIndicator={false}
+			>
 				{/* Stats Cards */}
 				<View style={styles.statsContainer}>
 					<View style={styles.statCard}>
@@ -62,7 +65,9 @@ export default function HomeScreen() {
 								<Text style={styles.actionIcon}>📷</Text>
 							</View>
 							<Text style={styles.actionTitle}>Scan Plant</Text>
-							<Text style={styles.actionDescription}>Take a photo to identify</Text>
+							<Text style={styles.actionDescription}>
+								Take a photo to identify
+							</Text>
 						</Pressable>
 
 						<Pressable
