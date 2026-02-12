@@ -37,8 +37,8 @@ export default function HomeScreen() {
 				end={{ x: 1, y: 1 }}
 			>
 				<View style={styles.headerContent}>
-					<View>
-						<Text style={styles.greeting}>
+					<View style={styles.textContainer}>
+						<Text style={styles.greeting} numberOfLines={2}>
 							Welcome Back{username ? `, ${username}` : ""}! 👋
 						</Text>
 						<Text style={styles.subtitle}>Your Plant Collection</Text>
@@ -131,12 +131,18 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
+		gap: 12,
+	},
+	textContainer: {
+		flex: 1,
+		marginRight: 8,
 	},
 	greeting: {
-		fontSize: 28,
+		fontSize: 24,
 		fontWeight: "bold",
 		color: "#ffffff",
 		marginBottom: 4,
+		flexWrap: "wrap",
 	},
 	subtitle: {
 		fontSize: 16,
