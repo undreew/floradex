@@ -26,7 +26,9 @@ export function OAuthButton({
 
 	const onPress = React.useCallback(async () => {
 		try {
-			const { createdSessionId, setActive } = await startOAuthFlow();
+			const { createdSessionId, setActive } = await startOAuthFlow({
+				redirectUrl: "floradex://oauth-native-callback",
+			});
 
 			if (createdSessionId) {
 				await setActive!({ session: createdSessionId });
