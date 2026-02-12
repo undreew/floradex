@@ -1,50 +1,291 @@
-import { Image } from "expo-image";
-import { StyleSheet } from "react-native";
-
-import { HelloWave } from "@/components/hello-wave";
-import ParallaxScrollView from "@/components/parallax-scroll-view";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SignOutButton } from "@/components/sign-out-button";
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
+import { useAuth } from "@clerk/clerk-expo";
 
 export default function HomeScreen() {
-	return (
-		<ParallaxScrollView
-			headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-			headerImage={
-				<Image
-					source={require("@/assets/images/partial-react-logo.png")}
-					style={styles.reactLogo}
-				/>
-			}
-		>
-			<ThemedView style={styles.titleContainer}>
-				<ThemedText type="title">Welcome!</ThemedText>
-				<HelloWave />
-			</ThemedView>
+	const { isLoaded, userId } = useAuth();
 
-			<ThemedView style={styles.stepContainer}>
-				<SignOutButton />
-			</ThemedView>
-		</ParallaxScrollView>
+	if (!isLoaded) {
+		return null;
+	}
+
+	return (
+		<View style={styles.container}>
+			{/* Header with Gradient */}
+			<LinearGradient
+				colors={["#667eea", "#764ba2"]}
+				style={styles.header}
+				start={{ x: 0, y: 0 }}
+				end={{ x: 1, y: 1 }}
+			>
+				<View style={styles.headerContent}>
+					<View>
+						<Text style={styles.greeting}>Welcome Back! 👋</Text>
+						<Text style={styles.subtitle}>Your Plant Collection</Text>
+					</View>
+					<View style={styles.logoCircle}>
+						<Text style={styles.logoEmoji}>🌿</Text>
+					</View>
+				</View>
+			</LinearGradient>
+
+			<ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+				{/* Stats Cards */}
+				<View style={styles.statsContainer}>
+					<View style={styles.statCard}>
+						<Text style={styles.statNumber}>0</Text>
+						<Text style={styles.statLabel}>Plants Scanned</Text>
+						<Text style={styles.statIcon}>🔍</Text>
+					</View>
+					<View style={styles.statCard}>
+						<Text style={styles.statNumber}>0</Text>
+						<Text style={styles.statLabel}>Collections</Text>
+						<Text style={styles.statIcon}>📚</Text>
+					</View>
+				</View>
+
+				{/* Quick Actions */}
+				<View style={styles.section}>
+					<Text style={styles.sectionTitle}>Quick Actions</Text>
+					<View style={styles.actionsGrid}>
+						<Pressable
+							style={({ pressed }) => [
+								styles.actionCard,
+								styles.scanCard,
+								pressed && styles.actionCardPressed,
+							]}
+							onPress={() => router.push("/(tabs)/scan")}
+						>
+							<View style={styles.actionIconContainer}>
+								<Text style={styles.actionIcon}>📷</Text>
+							</View>
+							<Text style={styles.actionTitle}>Scan Plant</Text>
+							<Text style={styles.actionDescription}>Take a photo to identify</Text>
+						</Pressable>
+
+						<Pressable
+							style={({ pressed }) => [
+								styles.actionCard,
+								styles.uploadCard,
+								pressed && styles.actionCardPressed,
+							]}
+							onPress={() => router.push("/(tabs)/upload")}
+						>
+							<View style={styles.actionIconContainer}>
+								<Text style={styles.actionIcon}>🖼️</Text>
+							</View>
+							<Text style={styles.actionTitle}>Upload Photo</Text>
+							<Text style={styles.actionDescription}>From your gallery</Text>
+						</Pressable>
+
+						<Pressable
+							style={({ pressed }) => [
+								styles.actionCard,
+								styles.quizCard,
+								pressed && styles.actionCardPressed,
+							]}
+							onPress={() => router.push("/(tabs)/quiz")}
+						>
+							<View style={styles.actionIconContainer}>
+								<Text style={styles.actionIcon}>🎯</Text>
+							</View>
+							<Text style={styles.actionTitle}>Take Quiz</Text>
+							<Text style={styles.actionDescription}>Test your knowledge</Text>
+						</Pressable>
+					</View>
+				</View>
+
+				{/* Recent Activity */}
+				<View style={styles.section}>
+					<Text style={styles.sectionTitle}>Recent Activity</Text>
+					<View style={styles.emptyState}>
+						<Text style={styles.emptyIcon}>🌱</Text>
+						<Text style={styles.emptyText}>No scans yet</Text>
+						<Text style={styles.emptySubtext}>
+							Start scanning plants to see your activity here
+						</Text>
+					</View>
+				</View>
+
+				{/* Sign Out Button */}
+				<View style={styles.section}>
+					<SignOutButton />
+				</View>
+
+				<View style={{ height: 40 }} />
+			</ScrollView>
+		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	titleContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
+	container: {
+		flex: 1,
+		backgroundColor: "#f5f5f5",
 	},
-	stepContainer: {
-		gap: 8,
+	header: {
+		paddingTop: 60,
+		paddingBottom: 30,
+		paddingHorizontal: 20,
+	},
+	headerContent: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	greeting: {
+		fontSize: 28,
+		fontWeight: "bold",
+		color: "#ffffff",
+		marginBottom: 4,
+	},
+	subtitle: {
+		fontSize: 16,
+		color: "rgba(255, 255, 255, 0.9)",
+	},
+	logoCircle: {
+		width: 60,
+		height: 60,
+		borderRadius: 30,
+		backgroundColor: "rgba(255, 255, 255, 0.95)",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	logoEmoji: {
+		fontSize: 30,
+	},
+	scrollView: {
+		flex: 1,
+	},
+	statsContainer: {
+		flexDirection: "row",
+		paddingHorizontal: 20,
+		paddingTop: 20,
+		gap: 12,
+	},
+	statCard: {
+		flex: 1,
+		backgroundColor: "#ffffff",
+		borderRadius: 16,
+		padding: 20,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 3,
+		position: "relative",
+	},
+	statNumber: {
+		fontSize: 32,
+		fontWeight: "bold",
+		color: "#667eea",
+		marginBottom: 4,
+	},
+	statLabel: {
+		fontSize: 14,
+		color: "#6b7280",
+	},
+	statIcon: {
+		fontSize: 24,
+		position: "absolute",
+		top: 16,
+		right: 16,
+		opacity: 0.3,
+	},
+	section: {
+		paddingHorizontal: 20,
+		marginTop: 24,
+	},
+	sectionTitle: {
+		fontSize: 20,
+		fontWeight: "bold",
+		color: "#1f2937",
+		marginBottom: 16,
+	},
+	actionsGrid: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		gap: 12,
+	},
+	actionCard: {
+		flex: 1,
+		minWidth: "30%",
+		backgroundColor: "#ffffff",
+		borderRadius: 16,
+		padding: 16,
+		alignItems: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 3,
+	},
+	actionCardPressed: {
+		opacity: 0.8,
+		transform: [{ scale: 0.98 }],
+	},
+	scanCard: {
+		borderLeftWidth: 3,
+		borderLeftColor: "#10b981",
+	},
+	uploadCard: {
+		borderLeftWidth: 3,
+		borderLeftColor: "#3b82f6",
+	},
+	quizCard: {
+		borderLeftWidth: 3,
+		borderLeftColor: "#f59e0b",
+	},
+	actionIconContainer: {
+		width: 50,
+		height: 50,
+		borderRadius: 25,
+		backgroundColor: "#f3f4f6",
+		justifyContent: "center",
+		alignItems: "center",
+		marginBottom: 12,
+	},
+	actionIcon: {
+		fontSize: 24,
+	},
+	actionTitle: {
+		fontSize: 14,
+		fontWeight: "600",
+		color: "#1f2937",
+		marginBottom: 4,
+		textAlign: "center",
+	},
+	actionDescription: {
+		fontSize: 11,
+		color: "#6b7280",
+		textAlign: "center",
+	},
+	emptyState: {
+		backgroundColor: "#ffffff",
+		borderRadius: 16,
+		padding: 40,
+		alignItems: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 3,
+	},
+	emptyIcon: {
+		fontSize: 48,
+		marginBottom: 12,
+	},
+	emptyText: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: "#1f2937",
 		marginBottom: 8,
 	},
-	reactLogo: {
-		height: 178,
-		width: 290,
-		bottom: 0,
-		left: 0,
-		position: "absolute",
+	emptySubtext: {
+		fontSize: 14,
+		color: "#6b7280",
+		textAlign: "center",
 	},
 });
