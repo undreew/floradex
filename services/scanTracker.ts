@@ -69,9 +69,9 @@ export async function trackSuccessfulScan(
 		// Add to current batch
 		const updatedBatch = [...currentBatch, plantRecord];
 
-		// Check if we've reached 1 scan for the batch
+		// Check if we've reached 5 scans for the batch
 		const batchSize = updatedBatch.length;
-		const shouldTriggerQuiz = batchSize >= 1 && !quizPending;
+		const shouldTriggerQuiz = batchSize >= 5 && !quizPending;
 
 		await user.update({
 			unsafeMetadata: {
@@ -83,7 +83,7 @@ export async function trackSuccessfulScan(
 		});
 
 		console.log(
-			`✅ Scan tracked! Total scans: ${newCount}, Batch: ${batchSize}/1`
+			`✅ Scan tracked! Total scans: ${newCount}, Batch: ${batchSize}/5`
 		);
 
 		if (shouldTriggerQuiz) {
