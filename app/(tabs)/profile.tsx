@@ -1,5 +1,6 @@
+import { RankDisplay } from "@/components/rank-display";
 import { SignOutButton } from "@/components/sign-out-button";
-import { userProfileService } from "@/services/userProfile";
+import { type UserRank, userProfileService } from "@/services/userProfile";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -21,10 +22,22 @@ export default function ProfileScreen() {
 	const [savedUsername, setSavedUsername] = useState<string | null>(null);
 	const [isEditing, setIsEditing] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
+	const [rank, setRank] = useState<UserRank>("novice");
+	const [quizzesPassed, setQuizzesPassed] = useState(0);
 
-	// Load saved username on mount
+	// Load saved username and rank data on mount
 	useEffect(() => {
 		loadUsername();
+		loadRankData();
+	}, []);
+
+	// Reload rank data when screen is focused (to reflect quiz completions)
+	useEffect(() => {
+		const interval = setInterval(() => {
+			loadRankData();
+		}, 2000); // Poll every 2 seconds for updates
+
+		return () => clearInterval(interval);
 	}, []);
 
 	const loadUsername = async () => {
@@ -33,6 +46,13 @@ export default function ProfileScreen() {
 		if (saved) {
 			setUsername(saved);
 		}
+	};
+
+	const loadRankData = async () => {
+		const userRank = await userProfileService.getRank();
+		const quizzes = await userProfileService.getQuizzesPassed();
+		setRank(userRank);
+		setQuizzesPassed(quizzes);
 	};
 
 	const handleSaveUsername = async () => {
@@ -92,6 +112,12 @@ export default function ProfileScreen() {
 				style={styles.scrollView}
 				showsVerticalScrollIndicator={false}
 			>
+				{/* Rank Display Section */}
+				<View style={styles.section}>
+					<Text style={styles.sectionTitle}>Ranking System</Text>
+					<RankDisplay rank={rank} quizzesPassed={quizzesPassed} />
+				</View>
+
 				{/* Username Section */}
 				<View style={styles.section}>
 					<Text style={styles.sectionTitle}>Username</Text>

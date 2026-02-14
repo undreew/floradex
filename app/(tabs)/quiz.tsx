@@ -6,6 +6,7 @@ import {
 	isQuizPending,
 	type QuizQuestion,
 } from "@/services/scanTracker";
+import { userProfileService } from "@/services/userProfile";
 import { useUser } from "@clerk/clerk-expo";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
@@ -106,6 +107,24 @@ const Quiz = () => {
 							setIsCompletingQuiz(true);
 							try {
 								await completeQuiz(user);
+
+								// Record quiz pass in user profile for rank tracking
+								try {
+									const result = await userProfileService.recordQuizPassed();
+									if (result.newRank) {
+										// Show rank up notification
+										setTimeout(() => {
+											Alert.alert(
+												"🎖️ Rank Up!",
+												`Congratulations! You've been promoted to ${result.newRank?.toUpperCase()}!`,
+												[{ text: "Awesome!" }]
+											);
+										}, 500);
+									}
+								} catch (error) {
+									console.error("Failed to record quiz in profile:", error);
+								}
+
 								// Reset quiz state
 								setQuizStarted(false);
 								setQuizQuestions([]);
