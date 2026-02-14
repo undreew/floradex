@@ -69,9 +69,10 @@ export async function trackSuccessfulScan(
 		// Add to current batch
 		const updatedBatch = [...currentBatch, plantRecord];
 
-		// Check if we've reached 5 scans for the batch
+		// Check if we've reached the minimum scans for the batch
 		const batchSize = updatedBatch.length;
-		const shouldTriggerQuiz = batchSize >= 5 && !quizPending;
+		const minScans = getMinScansRequired();
+		const shouldTriggerQuiz = batchSize >= minScans && !quizPending;
 
 		await user.update({
 			unsafeMetadata: {
@@ -83,7 +84,7 @@ export async function trackSuccessfulScan(
 		});
 
 		console.log(
-			`✅ Scan tracked! Total scans: ${newCount}, Batch: ${batchSize}/5`
+			`✅ Scan tracked! Total scans: ${newCount}, Batch: ${batchSize}/${minScans}`
 		);
 
 		if (shouldTriggerQuiz) {
@@ -114,7 +115,7 @@ export function getSuccessfulScanCount(user: any): number {
 export function hasQuizAccess(user: any): boolean {
 	const scanCount = getSuccessfulScanCount(user);
 	const minScansRequired = parseInt(
-		process.env.EXPO_PUBLIC_QUIZ_MIN_SCANS || "5",
+		process.env.EXPO_PUBLIC_QUIZ_MIN_SCANS || "1",
 		10
 	);
 
@@ -131,7 +132,7 @@ export function hasQuizAccess(user: any): boolean {
  * Get the minimum scans required for quiz access
  */
 export function getMinScansRequired(): number {
-	return parseInt(process.env.EXPO_PUBLIC_QUIZ_MIN_SCANS || "5", 10);
+	return parseInt(process.env.EXPO_PUBLIC_QUIZ_MIN_SCANS || "1", 10);
 }
 
 /**
@@ -157,7 +158,7 @@ export function getCurrentQuizBatch(user: any): ScannedPlant[] {
 }
 
 /**
- * Get the progress of the current quiz batch (e.g., "5/5")
+ * Get the progress of the current quiz batch (e.g., "1/1")
  */
 export function getQuizBatchProgress(user: any): {
 	current: number;
@@ -166,7 +167,7 @@ export function getQuizBatchProgress(user: any): {
 	const batch = getCurrentQuizBatch(user);
 	return {
 		current: batch.length,
-		total: 5,
+		total: getMinScansRequired(),
 	};
 }
 

@@ -475,7 +475,12 @@ const Quiz = () => {
 						</View>
 						<Text style={styles.cycleSubtext}>
 							{batchProgress.current === 0
-								? `Scan ${process.env.EXPO_PUBLIC_QUIZ_MIN_SCANS} plants to unlock a new quiz!`
+								? `Scan ${process.env.EXPO_PUBLIC_QUIZ_MIN_SCANS} ${
+										parseInt(process.env.EXPO_PUBLIC_QUIZ_MIN_SCANS || "1") ===
+										1
+											? "plant"
+											: "plants"
+									} to unlock a new quiz!`
 								: `${batchProgress.total - batchProgress.current} more ${
 										batchProgress.total - batchProgress.current === 1
 											? "scan"
