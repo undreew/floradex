@@ -86,18 +86,54 @@ export const userProfileService = {
 	},
 
 	/**
-	 * Record a successful quiz completion and update rank if needed
+	 * Initialize profile with default values if it doesn't exist
+	 * This ensures new users have rank tracking set up
 	 */
-	async recordQuizPassed(): Promise<{
+	async ensureProfileExists(userId?: string): Promise<UserProfile> {
+		try {
+			let profile = await this.getProfile();
+
+			if (!profile) {
+				// Create a new profile with defaults
+				const username = userId ? `user_${userId.slice(0, 8)}` : "new_user";
+				profile = {
+					username,
+					createdAt: new Date().toISOString(),
+					updatedAt: new Date().toISOString(),
+					rank: "novice",
+					quizzesPassed: 0,
+				};
+
+				await SecureStore.setItemAsync(
+					USER_PROFILE_KEY,
+					JSON.stringify(profile)
+				);
+
+				console.log("✅ Profile initialized with default rank: novice");
+			}
+
+			return profile;
+		} catch (error) {
+			console.error("Error ensuring profile exists:", error);
+			throw error;
+		}
+	},
+
+	/**
+	 * Record a successful quiz completion and update rank if needed
+	 * Also syncs with Clerk user metadata
+	 */
+	async recordQuizPassed(user?: any): Promise<{
 		newRank?: UserRank;
 		quizzesPassed: number;
 		currentRank: UserRank;
 	}> {
 		try {
-			const profile = await this.getProfile();
+			// Ensure profile exists first
+			let profile = await this.getProfile();
 			if (!profile) {
-				console.error("No profile found, cannot record quiz");
-				throw new Error("Profile not found");
+				console.warn("No profile found, initializing with defaults");
+				profile = await this.ensureProfileExists(user?.id);
 			}
 
 			const newQuizzesPassed = profile.quizzesPassed + 1;
@@ -108,10 +144,12 @@ export const userProfileService = {
 			if (profile.rank === "novice" && newQuizzesPassed >= 2) {
 				newRank = "intermediate";
 				rankChanged = true;
+				console.log("🎖️ RANK UP: Novice → Intermediate");
 			} else if (profile.rank === "intermediate" && newQuizzesPassed >= 5) {
 				// 2 quizzes as novice + 3 quizzes as intermediate = 5 total
 				newRank = "expert";
 				rankChanged = true;
+				console.log("🎖️ RANK UP: Intermediate → Expert");
 			}
 
 			// Update profile
@@ -126,6 +164,23 @@ export const userProfileService = {
 				USER_PROFILE_KEY,
 				JSON.stringify(updatedProfile)
 			);
+
+			// Sync with Clerk metadata for persistence
+			if (user) {
+				try {
+					await user.update({
+						unsafeMetadata: {
+							...user.unsafeMetadata,
+							userRank: newRank,
+							quizzesPassed: newQuizzesPassed,
+							lastRankUpdate: new Date().toISOString(),
+						},
+					});
+					console.log("✅ Synced rank data with Clerk");
+				} catch (error) {
+					console.warn("Failed to sync with Clerk (continuing anyway):", error);
+				}
+			}
 
 			console.log(
 				`✅ Quiz recorded! Total passed: ${newQuizzesPassed}, Rank: ${newRank}`
@@ -156,5 +211,92 @@ export const userProfileService = {
 	async getQuizzesPassed(): Promise<number> {
 		const profile = await this.getProfile();
 		return profile?.quizzesPassed || 0;
+	},
+
+	/**
+	 * Sync rank data from Clerk metadata to local storage
+	 * This restores data if the user reinstalls the app or uses a new device
+	 */
+	async syncFromClerk(user: any): Promise<void> {
+		try {
+			if (!user) {
+				console.warn("No user provided for sync");
+				return;
+			}
+
+			const clerkRank = user.unsafeMetadata?.userRank as UserRank | undefined;
+			const clerkQuizzes = user.unsafeMetadata?.quizzesPassed as
+				| number
+				| undefined;
+
+			if (clerkRank && clerkQuizzes !== undefined) {
+				// Get local profile
+				let profile = await this.getProfile();
+
+				// If local profile doesn't exist or Clerk has newer data, update from Clerk
+				if (!profile || clerkQuizzes > profile.quizzesPassed) {
+					const updatedProfile: UserProfile = {
+						username: profile?.username || `user_${user.id.slice(0, 8)}`,
+						createdAt: profile?.createdAt || new Date().toISOString(),
+						updatedAt: new Date().toISOString(),
+						rank: clerkRank,
+						quizzesPassed: clerkQuizzes,
+					};
+
+					await SecureStore.setItemAsync(
+						USER_PROFILE_KEY,
+						JSON.stringify(updatedProfile)
+					);
+
+					console.log(
+						`✅ Synced rank data from Clerk: ${clerkRank}, ${clerkQuizzes} quizzes`
+					);
+				}
+			}
+		} catch (error) {
+			console.error("Error syncing from Clerk:", error);
+		}
+	},
+
+	/**
+	 * Get rank progress information for display
+	 */
+	async getRankProgress(): Promise<{
+		rank: UserRank;
+		quizzesPassed: number;
+		quizzesForNextRank: number;
+		quizzesInCurrentRank: number;
+		canRankUp: boolean;
+	}> {
+		const profile = await this.getProfile();
+		const rank = profile?.rank || "novice";
+		const quizzesPassed = profile?.quizzesPassed || 0;
+
+		let quizzesForNextRank = 0;
+		let quizzesInCurrentRank = 0;
+		let canRankUp = false;
+
+		if (rank === "novice") {
+			quizzesInCurrentRank = quizzesPassed;
+			quizzesForNextRank = 2;
+			canRankUp = quizzesInCurrentRank >= quizzesForNextRank;
+		} else if (rank === "intermediate") {
+			quizzesInCurrentRank = Math.max(0, quizzesPassed - 2);
+			quizzesForNextRank = 3;
+			canRankUp = quizzesInCurrentRank >= quizzesForNextRank;
+		} else {
+			// Expert - max rank
+			quizzesInCurrentRank = quizzesPassed;
+			quizzesForNextRank = 0;
+			canRankUp = false;
+		}
+
+		return {
+			rank,
+			quizzesPassed,
+			quizzesForNextRank,
+			quizzesInCurrentRank,
+			canRankUp,
+		};
 	},
 };

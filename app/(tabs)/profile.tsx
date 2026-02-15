@@ -31,6 +31,13 @@ export default function ProfileScreen() {
 		loadRankData();
 	}, []);
 
+	// Initialize profile and sync with Clerk on mount
+	useEffect(() => {
+		if (user) {
+			initializeProfile();
+		}
+	}, [user]);
+
 	// Reload rank data when screen is focused (to reflect quiz completions)
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -39,6 +46,19 @@ export default function ProfileScreen() {
 
 		return () => clearInterval(interval);
 	}, []);
+
+	const initializeProfile = async () => {
+		try {
+			// Ensure profile exists
+			await userProfileService.ensureProfileExists(userId || undefined);
+			// Sync with Clerk to get latest data
+			await userProfileService.syncFromClerk(user);
+			// Reload data
+			await loadRankData();
+		} catch (error) {
+			console.error("Error initializing profile:", error);
+		}
+	};
 
 	const loadUsername = async () => {
 		const saved = await userProfileService.getUsername();
@@ -49,10 +69,14 @@ export default function ProfileScreen() {
 	};
 
 	const loadRankData = async () => {
-		const userRank = await userProfileService.getRank();
-		const quizzes = await userProfileService.getQuizzesPassed();
-		setRank(userRank);
-		setQuizzesPassed(quizzes);
+		try {
+			const userRank = await userProfileService.getRank();
+			const quizzes = await userProfileService.getQuizzesPassed();
+			setRank(userRank);
+			setQuizzesPassed(quizzes);
+		} catch (error) {
+			console.error("Error loading rank data:", error);
+		}
 	};
 
 	const handleSaveUsername = async () => {
@@ -209,6 +233,44 @@ export default function ProfileScreen() {
 						</View>
 					</View>
 				</View>
+
+				{/* Debug Section - Only in Development */}
+				{__DEV__ && (
+					<View style={styles.section}>
+						<Text style={styles.sectionTitle}>🔧 Debug Info</Text>
+						<View style={styles.card}>
+							<View style={styles.infoRow}>
+								<Ionicons name="information-circle" size={20} color="#f59e0b" />
+								<View style={styles.infoTextContainer}>
+									<Text style={styles.infoLabel}>Current Rank</Text>
+									<Text style={styles.infoValue}>{rank}</Text>
+								</View>
+							</View>
+							<View style={styles.divider} />
+							<View style={styles.infoRow}>
+								<Ionicons name="trophy" size={20} color="#f59e0b" />
+								<View style={styles.infoTextContainer}>
+									<Text style={styles.infoLabel}>Total Quizzes Passed</Text>
+									<Text style={styles.infoValue}>{quizzesPassed}</Text>
+								</View>
+							</View>
+							<View style={styles.divider} />
+							<View style={styles.infoRow}>
+								<Ionicons name="stats-chart" size={20} color="#f59e0b" />
+								<View style={styles.infoTextContainer}>
+									<Text style={styles.infoLabel}>Rank Progress</Text>
+									<Text style={styles.infoValue}>
+										{rank === "novice"
+											? `${quizzesPassed}/2 to Intermediate`
+											: rank === "intermediate"
+												? `${Math.max(0, quizzesPassed - 2)}/3 to Expert`
+												: "Max Rank"}
+									</Text>
+								</View>
+							</View>
+						</View>
+					</View>
+				)}
 
 				{/* Sign Out Section */}
 				<View style={styles.section}>

@@ -110,7 +110,8 @@ const Quiz = () => {
 
 								// Record quiz pass in user profile for rank tracking
 								try {
-									const result = await userProfileService.recordQuizPassed();
+									const result =
+										await userProfileService.recordQuizPassed(user);
 									if (result.newRank) {
 										// Show rank up notification
 										setTimeout(() => {
@@ -123,6 +124,7 @@ const Quiz = () => {
 									}
 								} catch (error) {
 									console.error("Failed to record quiz in profile:", error);
+									// Don't block quiz completion if rank recording fails
 								}
 
 								// Reset quiz state
