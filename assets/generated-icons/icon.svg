@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a8e6cf;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#56c596;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lensGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#e0f7fa;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="glowGrad">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Main device background with gradient -->
+  <rect x="0" y="0" width="1024" height="1024" rx="204.8" fill="url(#grad1)"/>
+  
+  <!-- Pokédex-style device design -->
+  <g transform="translate(512, 512)">
+    
+    <!-- Top circular lens/scanner (like Pokédex lens) -->
+    <g transform="translate(0, -184.32)">
+      <!-- Outer ring -->
+      <circle cx="0" cy="0" r="153.6" fill="#ffffff" opacity="0.3"/>
+      <circle cx="0" cy="0" r="133.12" fill="url(#lensGrad)"/>
+      
+      <!-- Inner lens with plant silhouette -->
+      <circle cx="0" cy="0" r="112.64" fill="#56c596" opacity="0.3"/>
+      
+      <!-- Plant icon in lens -->
+      <g opacity="0.8">
+        <path d="M 0,51.2 Q 0,0 0,-61.44" 
+              stroke="#2d5f4d" 
+              stroke-width="12.288" 
+              fill="none" 
+              stroke-linecap="round"/>
+        <path d="M 0,-30.72 Q -40.96,-51.2 -51.2,-30.72 Q -40.96,-10.24 0,-30.72"
+              fill="#2d5f4d"/>
+        <path d="M 0,0 Q 40.96,10.24 51.2,30.72 Q 40.96,51.2 0,0"
+              fill="#2d5f4d"/>
+      </g>
+      
+      <!-- Lens highlight -->
+      <ellipse cx="-40.96" cy="-40.96" rx="30.72" ry="25.6" 
+               fill="url(#glowGrad)"/>
+    </g>
+    
+    <!-- Screen/Display area -->
+    <rect x="-256" y="51.2" 
+          width="512" height="184.32" 
+          rx="20.48" 
+          fill="url(#screenGrad)" 
+          opacity="0.9"/>
+    
+    <!-- Screen border/frame -->
+    <rect x="-256" y="51.2" 
+          width="512" height="184.32" 
+          rx="20.48" 
+          fill="none"
+          stroke="#ffffff" 
+          stroke-width="8.192"/>
+    
+    <!-- Screen text lines (data display) -->
+    <line x1="-225.28" y1="92.16" x2="102.4" y2="92.16" 
+          stroke="#2d5f4d" stroke-width="6.144" opacity="0.5"/>
+    <line x1="-225.28" y1="143.36" x2="153.6" y2="143.36" 
+          stroke="#2d5f4d" stroke-width="6.144" opacity="0.5"/>
+    <line x1="-225.28" y1="194.56" x2="81.92" y2="194.56" 
+          stroke="#2d5f4d" stroke-width="6.144" opacity="0.5"/>
+    
+    <!-- Control buttons (Pokédex-style) -->
+    <!-- Large center button -->
+    <circle cx="0" cy="327.68" r="56.32" 
+            fill="#ffffff" opacity="0.9"/>
+    <circle cx="0" cy="327.68" r="46.08" 
+            fill="#a8e6cf"/>
+    
+    <!-- Small side buttons -->
+    <circle cx="-122.88" cy="327.68" r="30.72" 
+            fill="#ffffff" opacity="0.7"/>
+    <circle cx="122.88" cy="327.68" r="30.72" 
+            fill="#ffffff" opacity="0.7"/>
+    
+    <!-- Indicator lights (top right) -->
+    <circle cx="286.72" cy="-358.4" r="18.432" 
+            fill="#ff6b6b" opacity="0.8"/>
+    <circle cx="358.4" cy="-358.4" r="18.432" 
+            fill="#4ecdc4" opacity="0.8"/>
+    
+  </g>
+</svg>

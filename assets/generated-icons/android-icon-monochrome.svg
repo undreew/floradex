@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(512, 512)">
+    <!-- Circular lens -->
+    <circle cx="0" cy="-184.32" r="133.12" fill="none" stroke="#ffffff" stroke-width="15.36"/>
+    <circle cx="0" cy="-184.32" r="81.92" fill="#ffffff" opacity="0.3"/>
+    
+    <!-- Plant in lens -->
+    <path d="M 0,-133.12 Q 0,-184.32 0,-245.76" 
+          stroke="#ffffff" stroke-width="12.288" fill="none" stroke-linecap="round"/>
+    <path d="M 0,-215.04 Q -40.96,-235.52 -51.2,-215.04 Q -40.96,-194.56 0,-215.04"
+          fill="#ffffff"/>
+    <path d="M 0,-184.32 Q 40.96,-174.08 51.2,-153.6 Q 40.96,-133.12 0,-184.32"
+          fill="#ffffff"/>
+    
+    <!-- Screen -->
+    <rect x="-204.8" y="51.2" width="409.6" height="153.6" 
+          rx="15.36" fill="none" stroke="#ffffff" stroke-width="10.24"/>
+    
+    <!-- Buttons -->
+    <circle cx="0" cy="327.68" r="51.2" fill="none" stroke="#ffffff" stroke-width="10.24"/>
+    <circle cx="-102.4" cy="327.68" r="25.6" fill="#ffffff"/>
+    <circle cx="102.4" cy="327.68" r="25.6" fill="#ffffff"/>
+  </g>
+</svg>

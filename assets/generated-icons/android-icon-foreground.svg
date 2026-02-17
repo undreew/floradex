@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a8e6cf;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#56c596;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lensGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#e0f7fa;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Pokédex-style device design -->
+  <g transform="translate(512, 512)">
+    
+    <!-- Top circular lens/scanner -->
+    <g transform="translate(0, -184.32)">
+      <circle cx="0" cy="0" r="153.6" fill="#ffffff" opacity="0.3"/>
+      <circle cx="0" cy="0" r="133.12" fill="url(#lensGrad)"/>
+      <circle cx="0" cy="0" r="112.64" fill="#56c596" opacity="0.3"/>
+      
+      <g opacity="0.8">
+        <path d="M 0,51.2 Q 0,0 0,-61.44" 
+              stroke="#2d5f4d" stroke-width="12.288" fill="none" stroke-linecap="round"/>
+        <path d="M 0,-30.72 Q -40.96,-51.2 -51.2,-30.72 Q -40.96,-10.24 0,-30.72"
+              fill="#2d5f4d"/>
+        <path d="M 0,0 Q 40.96,10.24 51.2,30.72 Q 40.96,51.2 0,0"
+              fill="#2d5f4d"/>
+      </g>
+    </g>
+    
+    <!-- Screen area -->
+    <rect x="-256" y="51.2" width="512" height="184.32" 
+          rx="20.48" fill="url(#screenGrad)" opacity="0.9"/>
+    <rect x="-256" y="51.2" width="512" height="184.32" 
+          rx="20.48" fill="none" stroke="#ffffff" stroke-width="8.192"/>
+    
+    <!-- Buttons -->
+    <circle cx="0" cy="327.68" r="56.32" fill="#ffffff" opacity="0.9"/>
+    <circle cx="0" cy="327.68" r="46.08" fill="#a8e6cf"/>
+    <circle cx="-122.88" cy="327.68" r="30.72" fill="#ffffff" opacity="0.7"/>
+    <circle cx="122.88" cy="327.68" r="30.72" fill="#ffffff" opacity="0.7"/>
+    
+  </g>
+</svg>

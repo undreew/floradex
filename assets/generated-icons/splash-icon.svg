@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a8e6cf;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#56c596;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lensGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#e0f7fa;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Pokédex-style device design -->
+  <g transform="translate(256, 256)">
+    
+    <!-- Top circular lens/scanner -->
+    <g transform="translate(0, -92.16)">
+      <circle cx="0" cy="0" r="76.8" fill="#ffffff" opacity="0.3"/>
+      <circle cx="0" cy="0" r="66.56" fill="url(#lensGrad)"/>
+      <circle cx="0" cy="0" r="56.32" fill="#56c596" opacity="0.3"/>
+      
+      <g opacity="0.8">
+        <path d="M 0,25.6 Q 0,0 0,-30.72" 
+              stroke="#2d5f4d" stroke-width="6.144" fill="none" stroke-linecap="round"/>
+        <path d="M 0,-15.36 Q -20.48,-25.6 -25.6,-15.36 Q -20.48,-5.12 0,-15.36"
+              fill="#2d5f4d"/>
+        <path d="M 0,0 Q 20.48,5.12 25.6,15.36 Q 20.48,25.6 0,0"
+              fill="#2d5f4d"/>
+      </g>
+    </g>
+    
+    <!-- Screen area -->
+    <rect x="-128" y="25.6" width="256" height="92.16" 
+          rx="10.24" fill="url(#screenGrad)" opacity="0.9"/>
+    <rect x="-128" y="25.6" width="256" height="92.16" 
+          rx="10.24" fill="none" stroke="#ffffff" stroke-width="4.096"/>
+    
+    <!-- Buttons -->
+    <circle cx="0" cy="163.84" r="28.16" fill="#ffffff" opacity="0.9"/>
+    <circle cx="0" cy="163.84" r="23.04" fill="#a8e6cf"/>
+    <circle cx="-61.44" cy="163.84" r="15.36" fill="#ffffff" opacity="0.7"/>
+    <circle cx="61.44" cy="163.84" r="15.36" fill="#ffffff" opacity="0.7"/>
+    
+  </g>
+</svg>
