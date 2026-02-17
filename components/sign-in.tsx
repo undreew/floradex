@@ -1,6 +1,6 @@
 import { OAuthButton } from "@/components/oauth-button";
 import * as React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 export default function SignIn() {
 	return (
@@ -12,20 +12,6 @@ export default function SignIn() {
 				backgroundColor="#DB4437"
 				textColor="#ffffff"
 			/>
-
-			{/* Divider */}
-			<View style={styles.dividerContainer}>
-				<View style={styles.divider} />
-				<Text style={styles.dividerText}>or</Text>
-				<View style={styles.divider} />
-			</View>
-
-			<OAuthButton
-				provider="oauth_facebook"
-				label="Continue with Facebook"
-				icon="f"
-				backgroundColor="#1877F2"
-			/>
 		</View>
 	);
 }
@@ -33,21 +19,5 @@ export default function SignIn() {
 const styles = StyleSheet.create({
 	container: {
 		gap: 12,
-	},
-	dividerContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		marginVertical: 8,
-	},
-	divider: {
-		flex: 1,
-		height: 1,
-		backgroundColor: "#e5e7eb",
-	},
-	dividerText: {
-		marginHorizontal: 12,
-		opacity: 0.5,
-		fontSize: 13,
-		color: "#9ca3af",
 	},
 });
