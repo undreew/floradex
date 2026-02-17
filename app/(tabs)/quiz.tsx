@@ -5,7 +5,9 @@ import {
 	getQuizBatchProgress,
 	isQuizPending,
 	type QuizQuestion,
+	type ScannedPlant,
 } from "@/services/scanTracker";
+import { searchPlantByScientificName } from "@/services/trefleApi";
 import { userProfileService } from "@/services/userProfile";
 import { useUser } from "@clerk/clerk-expo";
 import { LinearGradient } from "expo-linear-gradient";
@@ -34,6 +36,141 @@ const Quiz = () => {
 	const quizPending = isQuizPending(user);
 	const currentBatch = getCurrentQuizBatch(user);
 	const batchProgress = getQuizBatchProgress(user);
+
+	// Function to handle viewing plant details from Trefle API
+	const handleViewPlantDetails = async (plant: ScannedPlant) => {
+		// Show loading alert
+		Alert.alert("Loading...", "Fetching plant details from Trefle database...");
+
+		try {
+			console.log(
+				`[Quiz] Fetching details for: ${plant.scientificName || plant.name}`
+			);
+			const details = await searchPlantByScientificName(
+				plant.scientificName || plant.name
+			);
+
+			if (details) {
+				console.log(`[Quiz] Details loaded: ${details.scientific_name}`);
+				console.log(`[Quiz] Common name: ${details.common_name}`);
+
+				// Build details text - start with most important info
+				let detailsText = `Scientific Name: ${details.scientific_name}\n`;
+
+				// Common name is the most important!
+				if (details.common_name) {
+					detailsText += `Common Name: ${details.common_name}\n`;
+				} else if (plant.commonNames && plant.commonNames.length > 0) {
+					detailsText += `Common Name: ${plant.commonNames[0]}\n`;
+				}
+
+				// Add author and year if available
+				if (details.author) {
+					detailsText += `Author: ${details.author}`;
+					if (details.year) {
+						detailsText += ` (${details.year})`;
+					}
+					detailsText += `\n`;
+				}
+
+				detailsText += `\nTaxonomy:\n`;
+
+				// Safely extract family and genus
+				const familyName =
+					typeof details.family === "string"
+						? details.family
+						: (details.family as any)?.name || "Unknown";
+				const genusName =
+					typeof details.genus === "string"
+						? details.genus
+						: (details.genus as any)?.name || "Unknown";
+
+				// Show family with common name if available
+				if (details.family_common_name) {
+					detailsText += `Family: ${details.family_common_name} (${familyName})\n`;
+				} else {
+					detailsText += `Family: ${familyName}\n`;
+				}
+
+				// Show genus
+				detailsText += `Genus: ${genusName}\n`;
+
+				// Add Plant.ID taxonomy if available
+				if (plant.taxonomy) {
+					if (plant.taxonomy.class) {
+						detailsText += `Class: ${plant.taxonomy.class}\n`;
+					}
+					if (plant.taxonomy.order) {
+						detailsText += `Order: ${plant.taxonomy.order}\n`;
+					}
+					if (plant.taxonomy.phylum) {
+						detailsText += `Phylum: ${plant.taxonomy.phylum}\n`;
+					}
+					if (plant.taxonomy.kingdom) {
+						detailsText += `Kingdom: ${plant.taxonomy.kingdom}\n`;
+					}
+				}
+
+				if (details.main_species) {
+					const ms = details.main_species;
+					detailsText += `\nPlant Information:\n`;
+
+					detailsText += `Edible: ${ms.edible ? "Yes" : "No"}\n`;
+					if (ms.edible_part && ms.edible_part.length > 0) {
+						detailsText += `Edible Parts: ${ms.edible_part.join(", ")}\n`;
+					}
+
+					if (ms.specifications) {
+						if (ms.specifications.growth_habit) {
+							detailsText += `Growth Habit: ${ms.specifications.growth_habit}\n`;
+						}
+						if (ms.specifications.growth_form) {
+							detailsText += `Growth Form: ${ms.specifications.growth_form}\n`;
+						}
+						if (ms.specifications.average_height?.cm) {
+							detailsText += `Average Height: ${ms.specifications.average_height.cm} cm\n`;
+						}
+						if (ms.specifications.toxicity) {
+							detailsText += `Toxicity: ${ms.specifications.toxicity}\n`;
+						}
+					}
+
+					// Add flower/foliage/fruit info if available
+					if (ms.flower?.color && ms.flower.color.length > 0) {
+						detailsText += `Flower Color: ${ms.flower.color.join(", ")}\n`;
+					}
+					if (ms.foliage?.color && ms.foliage.color.length > 0) {
+						detailsText += `Foliage Color: ${ms.foliage.color.join(", ")}\n`;
+					}
+					if (ms.duration && ms.duration.length > 0) {
+						detailsText += `Duration: ${ms.duration.join(", ")}\n`;
+					}
+				}
+
+				if (details.synonyms && details.synonyms.length > 0) {
+					detailsText += `\nSynonyms: ${details.synonyms.slice(0, 3).join(", ")}`;
+					if (details.synonyms.length > 3) {
+						detailsText += `, and ${details.synonyms.length - 3} more`;
+					}
+				}
+
+				Alert.alert("🌿 Plant Details", detailsText, [{ text: "Close" }]);
+			} else {
+				Alert.alert(
+					"Not Found",
+					"No details found for this plant in the Trefle database.",
+					[{ text: "OK" }]
+				);
+			}
+		} catch (error) {
+			console.error("[Quiz] Error fetching plant details:", error);
+			Alert.alert(
+				"Error",
+				"Failed to load plant details. Please check your internet connection.",
+				[{ text: "OK" }]
+			);
+		}
+	};
 
 	// Generate quiz questions when batch is ready
 	useEffect(() => {
@@ -409,20 +546,10 @@ const Quiz = () => {
 									)}
 									<TouchableOpacity
 										style={styles.debugButton}
-										onPress={() => {
-											Alert.alert(
-												"Plant Data",
-												`Name: ${plant.name}\n` +
-													`Common Names: ${plant.commonNames?.join(", ") || "None"}\n` +
-													`Genus: ${plant.taxonomy?.genus || "None"}\n` +
-													`Family: ${plant.taxonomy?.family || "None"}\n` +
-													`Kingdom: ${plant.taxonomy?.kingdom || "None"}\n` +
-													`Probability: ${(plant.probability * 100).toFixed(1)}%`
-											);
-										}}
+										onPress={() => handleViewPlantDetails(plant)}
 									>
 										<Text style={styles.debugButtonText}>
-											🔍 View Plant Data
+											🔍 View Plant Details
 										</Text>
 									</TouchableOpacity>
 								</View>
